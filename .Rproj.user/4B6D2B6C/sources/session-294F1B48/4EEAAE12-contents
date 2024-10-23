@@ -1,0 +1,509 @@
+---
+title: "<code><font color =#F8A53A>Interactive</font><font color =#76DFEC> & </font><font color =#C2DB70>effective</font><font color =#4C5455> data visualization</font></code>"
+subtitle: "Enhancing engagement and understanding"
+author: "Allan Quadros"
+date: "Ph.D. Candidate | Statistics - Kansas State University </br> Former Lead Data Scientist - FNDE/Brazil </br> `r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    lib_dir: libs
+    css: ["./css/middlebury.css", "./css/middlebury-fonts.css"]
+    nature:
+      beforeInit: ["./js/midd_xaringan.js"]
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+    includes:
+      in_header: "./libs/partials/header.html"
+---
+
+```{r setup, include=FALSE}
+options(htmltools.dir.version = FALSE)
+```
+
+layout: true
+background-image: url(./img/logo/logo2.png)
+background-position: 0% 100%
+background-size: 5%
+
+	
+```{css echo=FALSE}
+.highlight-last-item > ul > li,
+.highlight-last-item > ol > li {
+  opacity: 0.5;
+}
+.highlight-last-item > ul > li:last-of-type,
+.highlight-last-item > ol > li:last-of-type {
+  opacity: 1;
+}
+```
+
+
+---
+class: center, middle, highlight-last-item
+
+<!-- title-slide-section-grey,  -->
+<!-- #76DFEC - azul claro -->
+	<!-- #F35A94 - rosa -->
+	<!-- #F8A53A - laranja -->
+	<!-- #C2DB70 - verde -->
+	<!-- #4C5455 - cinza -->
+
+## <font color =#C2DB70>My goals</font>
+
+
+</br>
+--
+Provide some insights on data visualization (from the data scientist POV)
+
+</br>
+--
+Showcase interactive and effective graphs
+
+<!-- </br> -->
+<!-- -- -->
+<!-- Debunk some myths -->
+
+</br>
+--
+Share my experience on data visualization & predictive analysis
+
+
+---
+class: inverse, center, middle
+<!-- title-slide-section-grey,  -->
+
+## What is the right way way of doing data visualization?
+
+---
+
+</br>
+</br>
+
+###<font color =#4C5455><code>It depends...</code>
+
+
+.center[
+  ![](./img/diagram4.svg)
+]
+
+
+---
+class: highlight-last-item
+
+.pull-left[
+
+</br>
+</br>
+
+- Jornalistic
+
+![](./img/jornalistic-2.png)
+
+]
+
+
+.pull-right[
+
+</br>
+</br>
+
+- Scientific
+
+</br>
+</br>
+</br>
+
+
+![](./img/scientific-graph.jpeg)
+Figure1: Probability of each source belonging to a specific group
+]
+
+
+
+---
+class: highlight-last-item
+## <code><font color =#4C5455>Managers & Data Visualization</font></code>
+
+</br>
+
+### Managers need a broad picture of data visualization
+
+
+Assuming you know what you want to communicate/inform ...
+
+--
++ What is the audience?
+
+--
++ What is the goal?
+
+--
++ What are the effective ways of achieving that goal? 
+
+<!-- -- -->
+<!-- + What are the available tools? -->
+
+<!-- ... among the existent tools -->
+
+
+---
+class: center, middle
+<!-- title-slide-section-grey,  -->
+
+## Design Principles
+
+.pull-left[
+
+balance
+
+__emphasis on key areas__
+
+proportion
+
+__smart use of patterns__
+
+]
+
+.pull-right[
+
+__illustrating movement__
+
+__variety (novelty)__
+
+theme (standard)
+
+
+]
+
+
+---
+## <code><font color =#4C5455>Case 1 - Gapminder</font></code>
+
+.center[
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/hVimVzgtD6w?si=W2hkh8Ax4mtEuIfJ&amp;start=260" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+]
+
+---
+## <code><font color =#4C5455>Case 1 - Gapminder</font></code>
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(ggplot2)
+library(plotly)
+library(gapminder)
+
+
+base <- gapminder %>%
+  plot_ly(x = ~gdpPercap, y = ~lifeExp, size = ~pop, 
+          text = ~country, hoverinfo = "text") %>%
+  layout(xaxis = list(type = "log"))
+
+base %>%
+  add_markers(color = ~continent, frame = ~year, ids = ~country) %>%
+  animation_opts(1000, #easing = "elastic", 
+                 redraw = FALSE) %>%
+  animation_button(
+    x = 1, xanchor = "right", y = 0, yanchor = "bottom"
+  ) %>%
+  animation_slider(
+    currentvalue = list(prefix = "YEAR ", font = list(color="red"))
+  )
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+# Carregar as bibliotecas necessárias
+library(ggplot2)
+library(gapminder)
+library(dplyr)
+
+# Criar o gráfico com facetting por ano e remover pop da legenda
+p <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point(aes(size = pop), alpha = 0.7) + # Tamanho definido apenas no geom_point
+  scale_x_log10() +
+  labs(x = "GDP per capita", y = "Life expectancy", title = "Gapminder Data Facetted by Year") +
+  facet_wrap(~ year) + # Facetting por ano
+  scale_size(guide = 'none') + # Remover a legenda do tamanho
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# Exibir o gráfico
+print(p)
+```
+
+]
+
+
+
+---
+## <code><font color =#4C5455>Case 2 - Hidden Patterns</font></code>
+
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(plotly)
+
+# Definindo parâmetros para a esfera maior
+n_sphere <- 50
+theta <- seq(0, 2 * pi, length.out = n_sphere)
+phi <- seq(0, pi, length.out = n_sphere)
+
+# Adicionando perturbações à esfera maior
+noise_sphere <- runif(n_sphere * n_sphere, min = -0.1, max = 0.1)  # Ruído para a esfera
+x_sphere <- (1 + noise_sphere) * outer(cos(theta), sin(phi))  # Raio da esfera maior
+y_sphere <- (1 + noise_sphere) * outer(sin(theta), sin(phi))
+z_sphere <- outer(rep(1, n_sphere), cos(phi))  # Esfera maior
+
+# Definindo parâmetros para a esfera menor
+noise_sphere_small <- runif(n_sphere * n_sphere, min = -0.05, max = 0.05)  # Ruído para a esfera menor
+x_sphere_small <- (0.5 + noise_sphere_small) * outer(cos(theta), sin(phi))  # Raio da esfera menor
+y_sphere_small <- (0.5 + noise_sphere_small) * outer(sin(theta), sin(phi))
+z_sphere_small <- outer(rep(2, n_sphere), cos(phi))  # Esfera menor acima da maior
+
+# Definindo parâmetros para os círculos (anéis)
+circle_radius <- 1.5
+circle_theta <- seq(0, 2 * pi, length.out = 100)
+
+# Criar o gráfico 3D usando scatter plot
+p <- plot_ly() %>%
+  # Adicionar a esfera maior como pontos
+  add_markers(x = as.vector(x_sphere), y = as.vector(y_sphere), z = as.vector(z_sphere),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Large Sphere") %>%
+  # Adicionar a esfera menor como pontos
+  add_markers(x = as.vector(x_sphere_small), y = as.vector(y_sphere_small), z = as.vector(z_sphere_small),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Small Sphere")
+
+# Criar anéis
+ring_counts <- 5  # Número de anéis
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  z_offset <- i * 0.3  # Elevação de cada anel ao longo do eixo Z
+  
+  # Adicionando perturbações ao círculo
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  z_ring <- rep(z_offset, length(circle_theta))  # Anéis em diferentes alturas
+  
+  # Adicionar os anéis ao gráfico
+  p <- p %>%
+    add_markers(x = x_ring, y = y_ring, z = z_ring, 
+                marker = list(size = 5, color = 'red', opacity = 0.6), 
+                name = paste("Ring", i))
+}
+
+# Configurar layout
+p <- p %>%
+  layout(scene = list(xaxis = list(title = "X"),
+                      yaxis = list(title = "Y"),
+                      zaxis = list(title = "Z"),
+                      camera = list(
+                        eye = list(x = 0.8, y = 0.8, z = 3)  # Ajustar a posição da câmera
+                      ))
+         # title = "3D Sphere with Multiple Rings and a Smaller Sphere"),
+)
+
+p
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(ggplot2)
+
+# Criar dados para a versão 2D
+# Esfera maior
+sphere_data <- data.frame(
+  x = as.vector(x_sphere),
+  y = as.vector(y_sphere),
+  type = "Large Sphere"
+)
+
+# Esfera menor
+small_sphere_data <- data.frame(
+  x = as.vector(x_sphere_small),
+  y = as.vector(y_sphere_small),
+  type = "Small Sphere"
+)
+
+# Dados dos anéis
+ring_data <- data.frame()
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  ring_data <- rbind(ring_data, data.frame(x = x_ring, y = y_ring, type = paste("Ring", i)))
+}
+
+# Combinar todos os dados em um único dataframe
+all_data <- rbind(sphere_data, small_sphere_data, ring_data)
+
+# Criar o gráfico 2D
+p2d <- ggplot(all_data, aes(x = x, y = y#, 
+                            # color = type
+                            )) +
+  geom_point(size = 1, alpha = 0.8) +
+  labs(title = "2D Projection of Sphere and Rings", x = "X", y = "Y") +
+  theme_minimal()
+
+p2d
+```
+
+]
+
+
+---
+## <code><font color =#4C5455>Case 2 - Hidden Patterns</font></code>
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(plotly)
+
+# Definindo parâmetros para a esfera maior
+n_sphere <- 50
+theta <- seq(0, 2 * pi, length.out = n_sphere)
+phi <- seq(0, pi, length.out = n_sphere)
+
+# Adicionando perturbações à esfera maior
+noise_sphere <- runif(n_sphere * n_sphere, min = -0.1, max = 0.1)  # Ruído para a esfera
+x_sphere <- (1 + noise_sphere) * outer(cos(theta), sin(phi))  # Raio da esfera maior
+y_sphere <- (1 + noise_sphere) * outer(sin(theta), sin(phi))
+z_sphere <- outer(rep(1, n_sphere), cos(phi))  # Esfera maior
+
+# Definindo parâmetros para a esfera menor
+noise_sphere_small <- runif(n_sphere * n_sphere, min = -0.05, max = 0.05)  # Ruído para a esfera menor
+x_sphere_small <- (0.5 + noise_sphere_small) * outer(cos(theta), sin(phi))  # Raio da esfera menor
+y_sphere_small <- (0.5 + noise_sphere_small) * outer(sin(theta), sin(phi))
+z_sphere_small <- outer(rep(2, n_sphere), cos(phi))  # Esfera menor acima da maior
+
+# Definindo parâmetros para os círculos (anéis)
+circle_radius <- 1.5
+circle_theta <- seq(0, 2 * pi, length.out = 100)
+
+# Criar o gráfico 3D usando scatter plot
+p <- plot_ly() %>%
+  # Adicionar a esfera maior como pontos
+  add_markers(x = as.vector(x_sphere), y = as.vector(y_sphere), z = as.vector(z_sphere),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Large Sphere") %>%
+  # Adicionar a esfera menor como pontos
+  add_markers(x = as.vector(x_sphere_small), y = as.vector(y_sphere_small), z = as.vector(z_sphere_small),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Small Sphere")
+
+# Criar anéis
+ring_counts <- 5  # Número de anéis
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  z_offset <- i * 0.3  # Elevação de cada anel ao longo do eixo Z
+  
+  # Adicionando perturbações ao círculo
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  z_ring <- rep(z_offset, length(circle_theta))  # Anéis em diferentes alturas
+  
+  # Adicionar os anéis ao gráfico
+  p <- p %>%
+    add_markers(x = x_ring, y = y_ring, z = z_ring, 
+                marker = list(size = 5, color = 'red', opacity = 0.6), 
+                name = paste("Ring", i))
+}
+
+# Configurar layout
+p <- p %>%
+  layout(scene = list(xaxis = list(title = "X"),
+                      yaxis = list(title = "Y"),
+                      zaxis = list(title = "Z"),
+                      camera = list(
+                        eye = list(x = 0.8, y = 0.8, z = 3)  # Ajustar a posição da câmera
+                      ))
+         # title = "3D Sphere with Multiple Rings and a Smaller Sphere"),
+)
+
+p
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(ggplot2)
+
+# Criar dados para a versão 2D
+# Esfera maior
+sphere_data <- data.frame(
+  x = as.vector(x_sphere),
+  y = as.vector(y_sphere),
+  type = "Large Sphere"
+)
+
+# Esfera menor
+small_sphere_data <- data.frame(
+  x = as.vector(x_sphere_small),
+  y = as.vector(y_sphere_small),
+  type = "Small Sphere"
+)
+
+# Dados dos anéis
+ring_data <- data.frame()
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  ring_data <- rbind(ring_data, data.frame(x = x_ring, y = y_ring, type = paste("Ring", i)))
+}
+
+# Combinar todos os dados em um único dataframe
+all_data <- rbind(sphere_data, small_sphere_data, ring_data)
+
+# Criar o gráfico 2D
+p2d <- ggplot(all_data, aes(x = x, y = y#, 
+                            # color = type
+                            )) +
+  geom_point(size = 1, alpha = 0.8) +
+  labs(title = "2D Projection of Sphere and Rings", x = "X", y = "Y") +
+  theme_minimal()
+
+p2d
+```
+
+]
+
+
+---
+class: title-slide-final, middle
+background-image: url(https://github.com/allanvc/fig_repo/raw/master/logo2.png)
+background-size: 100px
+background-position: 9% 15%
+
+# Obrigado!
+
+
+## <code><font color =#F8A53A>D</font><font color =#76DFEC>O</font><font color =#C2DB70>U</font><font color =#4C5455>robot</font></code>
+
+
+### .white[Estamos à disposição para quaisquer dúvidas.]
+
+**Contato:**
+
+|                                                                                                            |                                   |
+| :--------------------------------------------------------------------------------------------------------- | :-------------------------------- |
+| <a href="mailto:contato@metapolitica.com.br">.RUred[<i class="fa fa-paper-plane fa-fw"></i>] | contato@metapolitica.com.br       |
+
+

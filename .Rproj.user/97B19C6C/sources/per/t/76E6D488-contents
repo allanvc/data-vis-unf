@@ -1,0 +1,1446 @@
+---
+title: "<code><font color =#F8A53A>Interactive</font><font color =#76DFEC> & </font><font color =#C2DB70>effective</font><font color =#4C5455> data visualization</font></code>"
+subtitle: "Enhancing engagement and understanding"
+author: "Allan Quadros"
+date: "Ph.D. Candidate | Statistics - Kansas State University </br> Former Lead Data Scientist - FNDE/Brazil </br> `r Sys.Date()`"
+output:
+  xaringan::moon_reader:
+    self_contained: true
+    lib_dir: libs
+    css: ["./css/middlebury.css", "./css/middlebury-fonts.css"]
+    nature:
+      beforeInit: ["./js/midd_xaringan.js"]
+      highlightStyle: github
+      highlightLines: true
+      countIncrementalSlides: false
+      ratio: "16:9"
+    includes:
+      in_header: "./libs/partials/header.html"
+---
+
+```{r setup, include=FALSE}
+options(options(htmltools.preserve.raw = FALSE))
+```
+
+layout: true
+background-image: url(./img/logo/logo2.png)
+background-position: 0% 100%
+background-size: 5%
+
+	
+```{css echo=FALSE}
+.highlight-last-item > ul > li,
+.highlight-last-item > ol > li {
+  opacity: 0.5;
+}
+.highlight-last-item > ul > li:last-of-type,
+.highlight-last-item > ol > li:last-of-type {
+  opacity: 1;
+}
+```
+
+
+---
+class: center, middle, highlight-last-item
+
+<!-- title-slide-section-grey,  -->
+<!-- #76DFEC - azul claro -->
+	<!-- #F35A94 - rosa -->
+	<!-- #F8A53A - laranja -->
+	<!-- #C2DB70 - verde -->
+	<!-- #4C5455 - cinza -->
+
+## <font color =#C2DB70>Objectives</font>
+
+
+</br>
+--
+Provide some insights on data visualization (from the data scientist POV)
+
+</br>
+--
+Showcase interactive and effective graphs
+
+<!-- </br> -->
+<!-- -- -->
+<!-- Debunk some myths -->
+
+</br>
+--
+Share my experience on data visualization & predictive analysis
+
+
+---
+class: inverse, center, middle
+<!-- title-slide-section-grey,  -->
+
+## What is the right way way of doing data visualization?
+
+---
+
+</br>
+</br>
+
+###<font color =#4C5455><code>It depends...</code>
+
+
+.center[
+  ![](./img/diagram4.svg)
+]
+
+
+---
+class: highlight-last-item
+
+.pull-left[
+
+</br>
+</br>
+
+- Jornalistic
+
+![](./img/jornalistic-2.png)
+
+]
+
+
+.pull-right[
+
+</br>
+</br>
+
+- Scientific
+
+</br>
+</br>
+</br>
+
+
+![](./img/scientific-graph.jpeg)
+Figure1: Probability of each source belonging to a specific group
+]
+
+
+
+---
+class: highlight-last-item
+## <code><font color =#4C5455>Managers & Data Visualization</font></code>
+
+</br>
+
+### Managers need a broad picture of data visualization
+
+
+Assuming you know what you want to communicate/inform ...
+
+--
++ What is the audience?
+
+--
++ What is the goal?
+
+--
++ What are the effective ways of achieving that goal? 
+
+<!-- -- -->
+<!-- + What are the available tools? -->
+
+<!-- ... among the existent tools -->
+
+
+---
+class: center, middle
+<!-- title-slide-section-grey,  -->
+
+## Design Principles
+
+.pull-left[
+
+balance
+
+__emphasis on key areas__
+
+proportion
+
+__smart use of patterns__
+
+]
+
+.pull-right[
+
+__illustrating movement__
+
+__variety (novelty)__
+
+theme (standard)
+
+
+]
+
+
+---
+## <code><font color =#4C5455>Case 1 - Gapminder</font></code>
+
+.center[
+
+<iframe width="560" height="315" src="https://www.youtube.com/embed/hVimVzgtD6w?si=W2hkh8Ax4mtEuIfJ&amp;start=260" title="YouTube video player" frameborder="0" allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share" referrerpolicy="strict-origin-when-cross-origin" allowfullscreen></iframe>
+
+]
+
+---
+## <code><font color =#4C5455>Case 1 - Gapminder</font></code>
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(ggplot2)
+library(plotly)
+library(gapminder)
+
+
+base <- gapminder %>%
+  plot_ly(x = ~gdpPercap, y = ~lifeExp, size = ~pop, 
+          text = ~country, hoverinfo = "text") %>%
+  layout(xaxis = list(type = "log"))
+
+base %>%
+  add_markers(color = ~continent, frame = ~year, ids = ~country) %>%
+  animation_opts(1000, #easing = "elastic", 
+                 redraw = FALSE) %>%
+  animation_button(
+    x = 1, xanchor = "right", y = 0, yanchor = "bottom"
+  ) %>%
+  animation_slider(
+    currentvalue = list(prefix = "YEAR ", font = list(color="red"))
+  )
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+# Carregar as bibliotecas necessárias
+library(ggplot2)
+library(gapminder)
+library(dplyr)
+
+# Criar o gráfico com facetting por ano e remover pop da legenda
+p <- ggplot(gapminder, aes(x = gdpPercap, y = lifeExp, color = continent)) +
+  geom_point(aes(size = pop), alpha = 0.7) + # Tamanho definido apenas no geom_point
+  scale_x_log10() +
+  labs(x = "GDP per capita", y = "Life expectancy", title = "Gapminder Data Facetted by Year") +
+  facet_wrap(~ year) + # Facetting por ano
+  scale_size(guide = 'none') + # Remover a legenda do tamanho
+  theme_minimal() +
+  theme(legend.position = "bottom")
+
+# Exibir o gráfico
+print(p)
+```
+
+]
+
+
+
+---
+## <code><font color =#4C5455>Case 2 - Hidden Patterns</font></code>
+
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(plotly)
+
+# Definindo parâmetros para a esfera maior
+n_sphere <- 50
+theta <- seq(0, 2 * pi, length.out = n_sphere)
+phi <- seq(0, pi, length.out = n_sphere)
+
+# Adicionando perturbações à esfera maior
+noise_sphere <- runif(n_sphere * n_sphere, min = -0.1, max = 0.1)  # Ruído para a esfera
+x_sphere <- (1 + noise_sphere) * outer(cos(theta), sin(phi))  # Raio da esfera maior
+y_sphere <- (1 + noise_sphere) * outer(sin(theta), sin(phi))
+z_sphere <- outer(rep(1, n_sphere), cos(phi))  # Esfera maior
+
+# Definindo parâmetros para a esfera menor
+noise_sphere_small <- runif(n_sphere * n_sphere, min = -0.05, max = 0.05)  # Ruído para a esfera menor
+x_sphere_small <- (0.5 + noise_sphere_small) * outer(cos(theta), sin(phi))  # Raio da esfera menor
+y_sphere_small <- (0.5 + noise_sphere_small) * outer(sin(theta), sin(phi))
+z_sphere_small <- outer(rep(2, n_sphere), cos(phi))  # Esfera menor acima da maior
+
+# Definindo parâmetros para os círculos (anéis)
+circle_radius <- 1.5
+circle_theta <- seq(0, 2 * pi, length.out = 100)
+
+# Criar o gráfico 3D usando scatter plot
+p <- plot_ly() %>%
+  # Adicionar a esfera maior como pontos
+  add_markers(x = as.vector(x_sphere), y = as.vector(y_sphere), z = as.vector(z_sphere),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Large Sphere") %>%
+  # Adicionar a esfera menor como pontos
+  add_markers(x = as.vector(x_sphere_small), y = as.vector(y_sphere_small), z = as.vector(z_sphere_small),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Small Sphere")
+
+# Criar anéis
+ring_counts <- 5  # Número de anéis
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  z_offset <- i * 0.3  # Elevação de cada anel ao longo do eixo Z
+  
+  # Adicionando perturbações ao círculo
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  z_ring <- rep(z_offset, length(circle_theta))  # Anéis em diferentes alturas
+  
+  # Adicionar os anéis ao gráfico
+  p <- p %>%
+    add_markers(x = x_ring, y = y_ring, z = z_ring, 
+                marker = list(size = 5, color = 'red', opacity = 0.6), 
+                name = paste("Ring", i))
+}
+
+# Configurar layout
+p <- p %>%
+  layout(scene = list(xaxis = list(title = "X"),
+                      yaxis = list(title = "Y"),
+                      zaxis = list(title = "Z"),
+                      camera = list(
+                        eye = list(x = 0.8, y = 0.8, z = 3)  # Ajustar a posição da câmera
+                      ))
+         # title = "3D Sphere with Multiple Rings and a Smaller Sphere"),
+)
+
+p
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(ggplot2)
+
+# Criar dados para a versão 2D
+# Esfera maior
+sphere_data <- data.frame(
+  x = as.vector(x_sphere),
+  y = as.vector(y_sphere),
+  type = "Large Sphere"
+)
+
+# Esfera menor
+small_sphere_data <- data.frame(
+  x = as.vector(x_sphere_small),
+  y = as.vector(y_sphere_small),
+  type = "Small Sphere"
+)
+
+# Dados dos anéis
+ring_data <- data.frame()
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  ring_data <- rbind(ring_data, data.frame(x = x_ring, y = y_ring, type = paste("Ring", i)))
+}
+
+# Combinar todos os dados em um único dataframe
+all_data <- rbind(sphere_data, small_sphere_data, ring_data)
+
+# Criar o gráfico 2D
+p2d <- ggplot(all_data, aes(x = x, y = y#, 
+                            # color = type
+                            )) +
+  geom_point(size = 1, alpha = 0.8) +
+  labs(title = "2D Projection of Sphere and Rings", x = "X", y = "Y") +
+  theme_minimal()
+
+p2d
+```
+
+]
+
+
+---
+## <code><font color =#4C5455>Case 2 - Hidden Patterns (2)</font></code>
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(plotly)
+library(dplyr)
+
+# Criar dados de exemplo
+set.seed(42)
+n <- 100
+data <- data.frame(
+  Product = rep(LETTERS[1:5], each = n / 5),
+  Price = runif(n, 100, 300),
+  Sales = runif(n, 20, 150),
+  Region = sample(c("North", "South", "East", "West", "Central"), n, replace = TRUE)
+)
+
+# Definindo uma função para calcular Z com base no tipo de produto
+data <- data %>%
+  mutate(Z = case_when(
+    Region == "North" ~ (Price + 6 * Sales^2)/10000,          # Produto A (Amarelo)
+    Region == "South" ~ (Price + 2.3 * Sales^2)/10000,      # Produto B (Azul)
+    Region == "East" ~ (Price * 1.2 + Sales * 1.5)/10000,  # Produto C (Verde)
+    Region == "West" ~ (Price * 1.5 + Sales * 2)/10000,    # Produto D (Laranja)
+    Region == "Central" ~ (Price + 4 * Sales^2)/10000  # Produto E (Roxo)
+  ))
+
+# Criar scatter plot 3D com produtos separados
+p3d <- plot_ly(data, x = ~Price, y = ~Sales, z = ~Z, 
+               color = ~Region, colors = c("yellow", "blue", "green", "orange", "purple"), 
+               text = ~Region, marker = list(size = 5, opacity = 0.6)) %>%
+  layout(scene = list(xaxis = list(title = "Price (US$/unit)"),
+                      yaxis = list(title = "Sales (1K)"),
+                      zaxis = list(title = "Discount (US$/unit)")),
+         title = "3D Scatter Plot of Sales Data with Distinct Regions")
+
+p3d
+```
+
+]
+
+
+.pull-right[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE, cache=FALSE}
+library(ggplot2)
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d <- ggplot(data, aes(x = Sales, y = Price, color = Region)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Sales Data", x = "Sales (1K units)", y = "Price (US$/unit)") +
+  scale_color_manual(values = c("yellow", "blue", "green", "orange", "purple")) +
+  theme_minimal()
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d2 <- ggplot(data, aes(x = Sales, y = Z, color = Region)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Sales Data", x = "Sales (1K units)", y = "Discount (US$/unit)") +
+  scale_color_manual(values = c("yellow", "blue", "green", "orange", "purple")) +
+  theme_minimal()
+
+# p2d2
+
+library(patchwork)
+
+p2d / p2d2
+
+```
+
+]
+
+
+
+
+---
+## <code><font color =#4C5455>Case 3 - Time Series (Seasonality) </font></code>
+
+
+<iframe src="rayshader_interactive.html" width="100%" height="420px"></iframe>
+
+
+---
+## <code><font color =#4C5455>Case 3b - Time Series (Seasonality) </font></code>
+
+.center[
+
+```{r, echo=FALSE, results='asis', warning=FALSE, message=FALSE}
+library(quantmod)
+# Fetch stock data for Apple
+# getSymbols("AAPL", src = "yahoo", from = "2021-01-01", to = Sys.Date())
+out <- getSymbols("AAPL", src = "yahoo", from = "2021-01-01", to = "2023-12-31", auto.assign = FALSE)
+
+# stock.data <- out
+stock.data <- as.data.frame(out[,6])
+
+stock.data <- cbind(rownames(stock.data), stock.data)
+
+colnames(stock.data) <- c("Date", "Price")
+
+
+stock.data$Price <- log(stock.data$Price) 
+library(dplyr)
+# Prepare the data
+# stock.data <- AAPL %>%
+#   as.data.frame() %>%
+#   rownames_to_column("Date") %>%
+#   select(Date, AAPL.Close) %>%
+#   mutate(Date = as.Date(Date))
+
+stock.data <- transform(stock.data,
+                        week = as.POSIXlt(Date)$yday %/% 7 + 1,
+                        wday = as.POSIXlt(Date)$wday,
+                        year = as.POSIXlt(Date)$year + 1900)
+
+library(ggplot2)
+# ---------------------
+# vs ggplot2
+
+# Adicionar a legenda separadamente
+pp_with_legend <- ggplot(stock.data, aes(week, wday, fill = Price)) + 
+  geom_tile(colour = "white") + 
+  scale_fill_gradientn(colours = c("#D61818","#FFAE63","#FFFFBD","#B5E384")) + 
+  facet_wrap(~ year, ncol = 1)
+
+# ---------------------
+# Gráfico de linha do preço da ação ao longo de 3 anos
+
+# Converter a coluna Date para o tipo Date
+stock.data$Date <- as.Date(stock.data$Date)
+
+# Criar o gráfico de linha
+line_plot <- ggplot(stock.data, aes(x = Date, y = Price)) +
+  geom_line(color = "#1f77b4", size = 1) +
+  labs(title = "Log of Apple Stock Price (2021-2023)",
+       x = "Date",
+       y = "Log of Price") +
+  theme_minimal(base_size = 14) +
+  theme(
+    plot.title = element_text(hjust = 0.5, size = 16, face = "bold"),
+    axis.title = element_text(size = 14),
+    axis.text = element_text(size = 12)
+  )
+
+library(patchwork)
+
+pp_with_legend / line_plot
+```
+
+]
+
+
+---
+## <code><font color =#4C5455>Case 4 - Forecasting </font></code>
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE, fig.width=6}
+# Pacotes necessários
+library(ggplot2)
+library(plotly)
+library(gt)
+library(forecast)
+library(dplyr)
+
+# Dados simulados
+set.seed(123)
+data <- data.frame(
+  Time = 1:10,
+  Sales = cumsum(rnorm(10, mean = 10, sd = 5))
+)
+
+# Convertendo os dados para uma série temporal
+sales_ts <- ts(data$Sales, frequency = 1)  # Frequência de 1 para dados não sazonais
+
+# Ajustando o modelo ARIMA
+arima_model <- auto.arima(sales_ts)
+
+# Forecast de 1 e 2 passos à frente com intervalos de confiança
+forecast_arima <- forecast(arima_model, h = 2, level = c(80, 95))
+
+# Convertendo a previsão para data frame
+forecast_data <- data.frame(
+  Time = 11:12,
+  Sales = forecast_arima$mean,
+  L95 = forecast_arima$lower[, 2],
+  L80 = forecast_arima$lower[, 1],
+  U80 = forecast_arima$upper[, 1],
+  U95 = forecast_arima$upper[, 2]
+)
+
+# Adicionando colunas de intervalo de confiança aos dados originais
+data$L95 <- NA
+data$L80 <- NA
+data$U80 <- NA
+data$U95 <- NA
+
+# Combinando os dados originais e de forecast
+data_forecast <- rbind(data, forecast_data)
+
+# Criando um dataframe separado para a linha de conexão
+connection_line <- data.frame(
+  Time = c(10, 11),
+  Sales = c(tail(data$Sales, 1), forecast_data$Sales[1])
+)
+
+# Criando o gráfico com intervalos de confiança e conexão entre o último observado e o primeiro previsto
+plot <- ggplot(data_forecast, aes(x = Time, y = Sales)) +
+  geom_line(data = data, color = "blue") +
+  geom_point(data = data, color = "blue") +
+  geom_line(data = forecast_data, color = "red", linetype = "dashed") +
+  geom_point(data = forecast_data, color = "red") +
+  geom_line(data = connection_line, aes(x = Time, y = Sales), color = "red", linetype = "dashed") +  # Linha conectando último ponto observado ao primeiro previsto
+  geom_ribbon(data = forecast_data, aes(ymin = L80, ymax = U80), fill = "lightblue", alpha = 0.5) +
+  geom_ribbon(data = forecast_data, aes(ymin = L95, ymax = U95), fill = "lightgray", alpha = 0.3) +
+  labs(title = "ARIMA Sales Forecast",
+       x = "Time",
+       y = "Sales") +
+  theme_minimal()
+
+# Tornando o gráfico interativo com ggplotly
+interactive_plot <- ggplotly(plot)
+
+# Exibindo o gráfico interativo
+interactive_plot
+
+
+
+```
+
+]
+
+
+.pull-left[
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE, cache=FALSE}
+# Invertendo a ordem das linhas
+data_forecast <- data_forecast %>%
+  arrange(desc(Time))
+
+# Substituindo NAs por traços
+data_forecast[is.na(data_forecast)] <- "-"
+
+# Criando a tabela com gt e destacando as previsões
+table <- gt(data_forecast) %>%
+  tab_header(
+    title = "Data and Forecast Table"
+  ) %>%
+  data_color(
+    columns = everything(),
+    rows = 1:2,  # Destaca as duas primeiras linhas (previsões)
+    fn = scales::col_factor(
+      palette = c("lightyellow"),
+      domain = NULL
+    )
+  )  %>%
+  tab_options(
+    table.font.size = "small"  # Reduz o tamanho da fonte
+  )
+
+# Exibindo a tabela
+table
+
+```
+
+]
+
+---
+## <code><font color =#4C5455>Case 5 - Tables are also visual tools </font></code>
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE, cache=FALSE}
+library(quantmod)  # For stock data
+library(gt)        # For creating tables
+library(gtExtras)  # For extended gt functionalities
+library(tidyverse) # For data wrangling
+library(scales)    # For scaling functions
+
+# Get the top 5 stocks from S&P 500
+top_stocks <- c("AAPL", "MSFT", "GOOGL", "AMZN", "TSLA")  # Example tickers
+
+# Initialize an empty dataframe to store stock data
+stock_data <- data.frame()
+stock_prices_df <- data.frame()
+# Get company logos with actual URLs
+logo_urls <- c(
+  # "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",        # Apple
+  "https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg",
+  "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",    # Microsoft
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Alphabet_Inc_Logo_2015.svg/2560px-Alphabet_Inc_Logo_2015.svg.png",       # Google
+  "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",       # Amazon
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Tesla_Motors.svg/800px-Tesla_Motors.svg.png"         # Tesla
+)
+
+## ----Simulating Sentiment Analysis-----------------------------------
+# Simulated sentiment scores for each company (-1 to 1 scale)
+sentiment_scores <- c(0.5, -0.2, 0, 0.7, -0.5)  # Example scores for AAPL, MSFT, GOOGL, AMZN, TSLA
+
+# Loop through the top stocks to get required information
+for (i in 1:length(top_stocks)) {
+  # Attempt to get stock data
+  # stock = top_stocks[1]
+  stock = top_stocks[i]
+  tryCatch({
+    out <- quantmod::getSymbols(stock, 
+                                from = "2023-09-30", 
+                                to = "2024-09-30",
+                                periodicity = "daily",
+                                auto.assign = FALSE)
+    
+    # Check if data exists
+    stock_prices <- Cl(out)
+    stock_volume <- Vo(out)
+    
+    if (length(stock_prices) > 0 && length(stock_volume) > 0) {
+      # Get the last closing price, trading volume, and percentage change
+      last_price <- stock_prices[nrow(stock_prices)]
+      volume <- stock_volume[nrow(stock_volume)]
+      pct_change <- (last_price - as.numeric(stock_prices[nrow(stock_prices) - 1])) / as.numeric(stock_prices[nrow(stock_prices) - 1]) * 100
+      
+      # Store data in a temporary dataframe
+      stock_info <- data.frame(
+        ticker = stock,
+        last_price = last_price,
+        volume = volume,
+        pct_change = pct_change
+      )
+      
+      # Ensure correct column names
+      colnames(stock_info) <- c("ticker", "last_price", "volume", "pct_change")
+      stock_data <- rbind(stock_data, stock_info)
+      
+      stock_prices_df <- rbind(stock_prices_df, 
+                               data.frame("ticker" = rep(stock, 
+                                                         nrow(stock_prices)),
+                                          "prices" = as.numeric(stock_prices), 
+                                          "volume" = as.numeric(stock_volume),
+                                          "logo" = logo_urls[i],
+                                          "sentiment" = sentiment_scores[i],
+                                          "last_price" = as.numeric(last_price),
+                                          "last_volume" = as.numeric(volume),
+                                          "pct_change" = as.numeric(pct_change)))
+      
+      
+    } else {
+      message(paste("No data available for", stock))
+    }
+    
+  }, error = function(e) {
+    message(paste("Error fetching data for", stock, ":", e$message))
+  })
+}
+
+
+
+# Check if any data was retrieved
+if (nrow(stock_data) == 0) {
+  stop("No stock data available. Please check the stock symbols or your internet connection.")
+}
+
+
+
+
+## ----Color gradient numeric cells-----------------------------------
+# Create custom color scales for positive and negative pct_change
+colors <- hue_pal(direction = -1)(3)
+
+pos_colors <- c("#5bb450", "#8bca84")
+neg_colors <- c("#ff2c2c", "#f69697")
+neutral_color <- "#FFA500"  # Orange for neutral sentiment
+
+mn <- min(stock_data$pct_change)
+mx <- max(stock_data$pct_change)
+
+# Format volume to millions and round to two decimal places
+# stock_data$volume <- round(stock_data$volume / 1e6, 2)  # Convert to millions and round
+stock_prices_df$volume <- round(stock_prices_df$volume / 1e6, 2)  # Convert to millions and round
+
+stock_prices_df2 <- stock_prices_df %>%
+  select(logo, ticker, last_price, volume, pct_change, sentiment, prices)
+
+# Create the table
+stock_prices_df2 %>%
+  group_by(ticker) |>
+  summarise(logo = logo[1],
+            ticker = ticker[1],
+            last_price = last_price[1],
+            volume = volume[1],
+            pct_change = pct_change[1],
+            sentiment = sentiment[1],
+            prices_data = list(prices) # adds the data as a list to the end of the df
+  ) %>%
+  ungroup() %>%
+  select(logo, ticker, last_price, volume, pct_change, sentiment, prices_data) %>%
+  gt() %>%
+  gt_plt_sparkline(prices_data, type = "shaded",
+                   palette = c("#248c7a", 
+                               "#248c7a",
+                               neg_colors[1],
+                               pos_colors[1],
+                               "#d4e8e6")) %>%
+  # sol:
+  # https://r-graph-gallery.com/368-plotting-in-cells-with-gtextras.html
+  # https://stackoverflow.com/questions/69531801/plot-histograms-per-row-using-gt-tables-r
+  # (ultima resposta)
+  
+  gt_img_rows(logo, height = 20) %>%  # Display logos as images
+  tab_style(
+    style = list(
+      cell_fill(color = pos_colors[2])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change >= 0
+    )
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = pos_colors[1])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change >= 1
+    )
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = neg_colors[2])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change < 0
+    )
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = neg_colors[1])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change <= -1
+    )
+  ) %>%
+  cols_label(
+    logo = "",           # Empty label for the logo column
+    ticker = "Ticker",
+    last_price = "Last Price",
+    volume = "Vol. (M)",
+    pct_change = "Change (%)",
+    sentiment = "Sentiment",  # New column label
+    prices_data = "YTD"
+  ) %>%
+  fmt_number(
+    columns = pct_change,
+    decimals = 2  # Round pct_change to 2 decimal places
+  ) %>%
+  fmt_number(
+    columns = volume,
+    decimals = 2  # Round volume to 2 decimal places
+  ) %>%
+  tab_style(
+    style = list(cell_text(color = "white")),  # Set font color for pct_change to white
+    locations = cells_body(columns = pct_change)
+  ) %>%
+  cols_width(logo ~ px(70)) %>%  # Adjust logo width for rectangular size
+  tab_style(
+    style = list(cell_text(style = "italic")),
+    locations = cells_body(columns = ticker)
+  ) %>%
+  tab_style(
+    style = list(cell_text(align = "center")),  # Center align logos
+    locations = cells_body(columns = logo)
+  ) %>%
+  # Create sentiment bars manually
+  text_transform(
+    locations = cells_body(columns = sentiment),
+    fn = function(x) {
+      # Ensure x is numeric
+      x <- as.numeric(x)
+      
+      # Prepare sentiment bars
+      sentiment_bars <- sapply(x, function(val) {
+        if (val > 0) {
+          width_pos <- min(50, 50 * val)  # Width for positive sentiment
+          # Calculate width for each bar
+          width_positive <- pmax(0, pmin(50 * val, 50))   # Width for positive sentiment
+          # width_negative <- pmax(0, pmin(50 * -x, 50))  # Width for negative sentiment
+          return(paste0(
+            '<div style="display: flex; width: 100%; height: 15px;">',
+            '<div style="background-color:transparent; width: 50%; height: 15px;"></div>',
+            '<div style="background-color:', pos_colors[1], '; width:', width_positive, '%; height: 15px;"></div>',
+            # '<div style="background-color:transparent; width: 50%; height: 20px;"></div>',
+            # '<div style="background-color:', pos_colors[1], '; width:', 50-width_pos, '%; height: 20px;"></div>',
+            # '<div style="display: flex; width: 100%; height: 20px;">',
+            # '<div style="background-color:', pos_colors[1], '; width:', width_pos, '%; height: 20px;"></div>',
+            # '<div style="background-color:transparent; width:', 50 - width_pos, '%; height: 20px;"></div>',
+            '</div>'
+          ))
+        } else if (val < 0) {
+          width_neg <- min(50, 50 * abs(val))  # Width for negative sentiment
+          return(paste0(
+            '<div style="display: flex; width: 100%; height: 15px;">',
+            '<div style="background-color:transparent; width:', 50 - width_neg, '%; height: 15px;"></div>',
+            '<div style="background-color:', neg_colors[1], '; width:', width_neg, '%; height: 15px;"></div>',
+            '</div>'
+          ))
+        } else {
+          return(paste0(
+            '<div style="display: flex; width: 100%; height: 10px;">',
+            '<div style="background-color:transparent; width:', 45, '%; height: 10px;"></div>',
+            '<div style="background-color:', neutral_color, '; width:', 10, '%; height: 10px;"></div>',
+            '</div>'
+            # '<div style="background-color:', neutral_color, '; width:100%; height: 20px;"></div>'
+          ))
+        }
+      })
+      return(sentiment_bars)
+    }
+  ) %>%
+  tab_options(heading.title.font.size = px(24)) %>%
+  tab_header(
+    title = "Top 5 S&P 500 Stocks",
+    subtitle = "Latest trading information and company logos."
+  ) %>%
+  tab_source_note(md("Data collected from 9/30/23 to 9/30/24 - Allan Quadros (2024)")) %>%
+  # gt_theme_guardian()
+  gt_theme_dark()
+```
+
+
+
+---
+## <code><font color =#4C5455>Case 6 - Network graphs </font></code>
+
+
+```{r, echo=FALSE, message=FALSE, results='asis', warning=FALSE}
+library(tidyverse)
+library(tidygraph) # network analysis
+library(visNetwork) # interactive network visualization
+library(janitor) # for data cleaning functions
+
+# Create Mock Data ---------------------------------------------------------
+
+set.seed(123) # For reproducibility
+
+# Generate search terms and products
+search_terms <- c("Smartphone", "Laptop", "Headphones", "Camera", "Tablet", "Smartwatch", "Speaker", "Charger")
+products <- c("iPhone", "Galaxy", "Dell XPS", "MacBook", "Sony WH-1000XM4", "Canon EOS", "iPad", "Apple Watch", "Bose SoundLink", "Anker Charger")
+
+# Product image URLs (Replace with actual image URLs)
+product_images <- c(
+  "https://m.media-amazon.com/images/I/61qrpgQK-oL._AC_UY218_.jpg",  # iPhone
+  "https://m.media-amazon.com/images/I/71qeTVe5d1L._AC_UY218_.jpg",  # Galaxy
+  "https://m.media-amazon.com/images/I/51jB5wrRhbL._AC_UY218_.jpg",  # Dell XPS
+  "https://m.media-amazon.com/images/I/71NZpTxWzRL._AC_UY218_.jpg",  # MacBook
+  "https://m.media-amazon.com/images/I/61vIICn1JOL._AC_UY218_.jpg",  # Sony WH-1000XM4
+  "https://m.media-amazon.com/images/I/71ANGtyZRzL._AC_UY218_.jpg",  # Canon EOS
+  "https://m.media-amazon.com/images/I/61Ep+3Q8OiL._AC_UY218_.jpg",  # iPad
+  "https://m.media-amazon.com/images/I/71nbXdvdGfL._AC_UY218_.jpg",  # Apple Watch
+  "https://m.media-amazon.com/images/I/71L9o0-0SML._AC_UY218_.jpg",  # Bose SoundLink
+  "https://m.media-amazon.com/images/I/5164giE9fFL._AC_UY218_.jpg"   # Anker Charger
+)
+
+# Create a data frame of purchases
+mock_data <- data.frame(
+  SearchTerm = sample(search_terms, 50, replace = TRUE),
+  Product = sample(products, 50, replace = TRUE)
+)
+
+# Clean and reshape the data ------------------------------------------------
+
+df_cleaned <- mock_data %>%
+  filter(!is.na(Product)) %>% # Remove NA products
+  select(SearchTerm, Product) # Select relevant columns
+
+# Create a "tbl_graph" object
+network <- df_cleaned %>%
+  as_tbl_graph()
+
+# Network characteristics
+# cat("Number of edges:", network %>% activate(edges) %>% nrow(), "\n")
+# cat("Number of nodes:", network %>% activate(nodes) %>% nrow(), "\n")
+
+# Centrality measures, for example degree
+degree_centrality <- network %>%
+  activate(nodes) %>% 
+  mutate(degree = centrality_degree()) %>% 
+  as_tibble() %>%
+  arrange(desc(degree))
+
+# Display top 10 products by degree centrality
+# print(head(degree_centrality, 10))
+
+# Prepare node images and labels
+vis_network <- network %>%
+  mutate(group = if_else(condition = name %in% unique(df_cleaned$Product), 
+                         true = "Product", 
+                         false = "Search Term")) %>%
+  toVisNetworkData()
+
+# Map product images to the product names
+vis_network$nodes$image <- NA  # Initialize image column
+
+# Assign images to products
+for (i in seq_along(products)) {
+  vis_network$nodes$image[vis_network$nodes$id == products[i]] <- product_images[i]
+}
+
+# Define color palette
+search_term_color <- "#3498db"  # Blue
+product_color <- "#e74c3c"       # Red
+
+# Interactive network with images
+visNetwork(nodes = vis_network$nodes, edges = vis_network$edges, 
+           width = "100%", height = "450px",
+           main = "Product Click Patterns from Initial Search Queries") %>%
+  visLayout(randomSeed = 1000) %>%
+  addFontAwesome() %>%
+  visGroups(groupname = "Search Term", shape = "icon",
+            icon = list(code = "f002", color = search_term_color)) %>%
+  visGroups(groupname = "Product", shape = "image",
+            image = list(source = vis_network$nodes$image)) %>%
+  visOptions(highlightNearest = list(enabled = TRUE, hover = TRUE), 
+             nodesIdSelection = TRUE) %>%
+  visInteraction(navigationButtons = TRUE) %>%
+  visEdges(color = list(highlight = "#2ecc71", inherit = "no", opacity = 0.5)) # Custom edge colors
+
+```
+
+
+---
+## <code><font color =#4C5455>Case 7 - Word clouds </font></code>
+
+
+.pull-left[
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+# Load necessary packages
+library(tm)
+library(wordcloud)
+library(RColorBrewer)
+
+# Simulate a larger dataset of product reviews
+set.seed(123)
+reviews <- c(
+  "I love this product, it has excellent quality!",
+  "Very good, it met my expectations.",
+  "I didn't like it, the material is flimsy.",
+  "Amazing product, I recommend it to everyone!",
+  "Excellent value for money, I would buy it again.",
+  "The delivery was fast and the customer service was great!",
+  "Terrible quality, I do not recommend.",
+  "Great product, my family loved it!",
+  "It arrived defective, I was disappointed.",
+  "It exceeded my expectations, really effective.",
+  "Fantastic product, works like a charm.",
+  "I'm so happy with this purchase!",
+  "The design is beautiful and functional.",
+  "Not what I expected, quite underwhelming.",
+  "This is the best product I've ever bought!",
+  "I will definitely be buying this again.",
+  "Good quality, but a bit expensive.",
+  "The packaging was nice and secure.",
+  "I had some issues with the product.",
+  "Excellent, will recommend to friends and family.",
+  "This product changed my life for the better.",
+  "Incredible experience, truly a game changer!",
+  "Quality is just okay, but not worth the price.",
+  "Love the features, very user-friendly.",
+  "I would not purchase this item again.",
+  "The colors are vibrant and true to the description.",
+  "Great for everyday use, highly practical.",
+  "This product does exactly what it claims to do.",
+  "Disappointed with the performance, expected more.",
+  "Would recommend to others for its value.",
+  "It's decent, but I've seen better options.",
+  "Perfect for my needs, would buy again!",
+  "The customer support was very helpful.",
+  "This item broke after just one use, not reliable.",
+  "So easy to use, I'm impressed.",
+  "A bit complicated to set up initially.",
+  "Exceeded all my expectations, I'm thrilled!",
+  "The size is perfect for what I needed.",
+  "Not as described, very misleading.",
+  "I use this product daily, it's fantastic!",
+  "The price point is just right for the quality.",
+  "This has become my go-to product!",
+  "Very sturdy and durable, I love it.",
+  "The installation was straightforward and quick.",
+  "This product has improved my daily routine.",
+  "The negative reviews had me worried, but it's great!",
+  "Absolutely worth the investment!",
+  "The warranty provided peace of mind.",
+  "Shipping was slow, but worth the wait.",
+  "I purchased this as a gift, and they loved it!",
+  "The instructions were clear and easy to follow.",
+  "Not impressed with the customer service.",
+  "It works well, but has a learning curve.",
+  "I'm a fan of this brand, always good quality.",
+  "The only downside is the weight, it's a bit heavy.",
+  "It gets the job done without any issues.",
+  "I've recommended this to all my friends.",
+  "The reviews helped me make an informed choice.",
+  "Very pleased with the overall performance.",
+  "I was skeptical, but it really works!",
+  "The negative reviews were exaggerated.",
+  "Good product, but not my favorite.",
+  "The variety of options is a huge plus.",
+  "I'm definitely buying this again in the future!",
+  "This is a must-have for anyone!",
+  "The price is unbeatable for the quality!",
+  "Great packaging, very thoughtful.",
+  "I've seen no issues, works perfectly.",
+  "This product stands out from the rest.",
+  "It's okay, nothing too special.",
+  "I expected better based on the reviews.",
+  "Would give it a higher rating if possible.",
+  "This has made my life easier.",
+  "I would recommend this with reservations.",
+  "The return policy was a lifesaver.",
+  "This product has been a pleasant surprise.",
+  "The product is well made, I appreciate it.",
+  "I wish it came in more colors.",
+  "It didn't meet my expectations, unfortunately.",
+  "The reviews were spot on, very accurate!",
+  "This is a reliable product, happy with my choice.",
+  "Perfect for gifts, everyone loves it.",
+  "The performance has been consistent.",
+  "Excellent customer experience, I felt valued.",
+  "It's functional and stylish, a great combo.",
+  "The quality control seems lacking.",
+  "I'm very satisfied with my purchase.",
+  "Would love to see more sizes available.",
+  "This is a solid investment, I recommend it.",
+  "It looks good and performs even better.",
+  "This is what I was looking for!",
+  "The feedback helped guide my decision.",
+  "This has saved me a lot of time and effort.",
+  "Very innovative design, impressed!",
+  "It performs better than I anticipated.",
+  "I love the simplicity of this product.",
+  "The colors faded quickly, not durable.",
+  "This exceeded my expectations in every way.",
+  "The features are just what I need.",
+  "I would not hesitate to purchase again.",
+  "The user manual could be improved.",
+  "This is a fantastic value for the price.",
+  "My only complaint is the size, it's too small.",
+  "The quality has deteriorated over time.",
+  "This product truly delivers on its promises.",
+  "I appreciate the thoughtfulness in design.",
+  "Great for gifting, everyone loves it!",
+  "I wish I had bought this sooner.",
+  "This product has been a lifesaver for me.",
+  "It’s not perfect, but it works well enough.",
+  "I'm not a fan of the color options available.",
+  "This is a no-brainer, just buy it!",
+  "I can’t recommend this enough!",
+  "The product design is very appealing.",
+  "It fits my needs perfectly, very happy.",
+  "I would purchase again without hesitation.",
+  "The material feels cheap, not impressed.",
+  "This has been a fantastic addition to my routine.",
+  "It's reliable and easy to use.",
+  "The instructions were not clear at all.",
+  "This has really simplified my life.",
+  "I expected more durability from this item.",
+  "It’s exactly as described, no surprises.",
+  "The product was a bit late on delivery, but great.",
+  "I had to contact support, and they were helpful.",
+  "Very satisfied overall, no complaints.",
+  "It functions as intended, great job!",
+  "The quality is top-notch, very pleased.",
+  "This is not worth the price.",
+  "My expectations were exceeded!",
+  "It’s a great addition to my collection.",
+  "This product is reliable and durable.",
+  "I recommend it for anyone looking for value.",
+  "I've had a great experience with this item.",
+  "This product is exactly what I needed.",
+  # Adding new unique reviews to expand the dataset
+  "The quality is amazing, I can't believe the price!",
+  "It's everything I hoped for and more.",
+  "This is a game-changer in my daily routine.",
+  "Not impressed with the packaging, but the product is great.",
+  "The instructions could be clearer, but it works well.",
+  "Fantastic value, especially during the sale.",
+  "The product is versatile and easy to use.",
+  "I’ve had a lot of fun using this product.",
+  "It's well worth the investment for its performance.",
+  "I am absolutely thrilled with my purchase!",
+  "Sleek design and powerful functionality.",
+  "I can't believe how much I love this product.",
+  "The negative reviews almost stopped me from buying, but I'm glad I did.",
+  "It has exceeded my wildest expectations.",
+  "The craftsmanship is outstanding, very impressed.",
+  "Great product with a lot of useful features.",
+  "The only downside is it could be a bit cheaper.",
+  "I've already told my friends to buy one!",
+  "I love the color options available.",
+  "I will continue to buy from this brand.",
+  "This product works seamlessly with others I own.",
+  "I'm pleasantly surprised by how well it performs.",
+  "It's made my life so much easier!",
+  "The performance is top-notch, definitely recommend.",
+  "This is the best item in my kitchen now!",
+  "I love how compact it is, perfect for storage.",
+  "The warranty gives me peace of mind.",
+  "This product has been reliable and consistent.",
+  "I've used it for weeks with no issues.",
+  "Excellent for both beginners and experts.",
+  "It's a must-have for anyone serious about this hobby.",
+  "This product has a sleek and modern look.",
+  "I appreciate the environmentally friendly materials.",
+  "Very impressive, I'll be purchasing again.",
+  "The usability is unmatched, very intuitive.",
+  "I'm impressed with how well it holds up.",
+  "This is one of my favorite purchases ever.",
+  "The functionality is superb, love it!",
+  "My only regret is not buying it sooner.",
+  "The customer service was incredibly responsive.",
+  "It's a little heavier than I expected, but that's okay.",
+  "I use this product every day and it's fantastic.",
+  "The versatility of this product is outstanding.",
+  "I'm happy with my purchase overall.",
+  "This product has a solid reputation for a reason.",
+  "I would definitely buy this again without hesitation.",
+  "This has been a lifesaver."
+)
+
+# Create a text corpus
+corpus <- Corpus(VectorSource(reviews))
+
+# Preprocess the text
+corpus <- tm_map(corpus, content_transformer(tolower)) # Convert to lowercase
+corpus <- tm_map(corpus, removePunctuation)            # Remove punctuation
+corpus <- tm_map(corpus, removeNumbers)                # Remove numbers
+corpus <- tm_map(corpus, removeWords, stopwords("en")) # Remove stopwords
+corpus <- tm_map(corpus, stripWhitespace)              # Remove extra whitespace
+
+# Create a term-document matrix
+dtm <- TermDocumentMatrix(corpus)
+matrix <- as.matrix(dtm)
+word_freqs <- sort(rowSums(matrix), decreasing = TRUE)
+word_freqs <- data.frame(word = names(word_freqs), freq = word_freqs)
+
+# Create the word cloud
+set.seed(1234) # For reproducibility
+wordcloud(words = word_freqs$word,
+          freq = word_freqs$freq,
+          min.freq = 1,
+          max.words = 100,
+          random.order = FALSE,
+          rot.per = 0.35,
+          scale = c(4, 0.5),
+          colors = brewer.pal(8, "Dark2"),
+          main = "Word Cloud - Product Reviews on Amazon")
+
+```
+
+]
+
+.pull-right[
+
+![](./img/unf-wordcloud.png)
+]
+
+
+
+---
+class: inverse, center, middle
+<!-- title-slide-section-grey,  -->
+
+## Maps
+
+
+
+---
+## <code><font color =#4C5455> Case 8 - Climatic/Demographic map (1) </font></code>
+
+.pull-left[
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+
+# Carregando pacotes necessários
+library(leaflet)
+library(stringi)
+library(htmltools)
+library(RColorBrewer)
+library(drat)
+library(hurricaneexposuredata)
+library(tigris)
+library(dplyr)
+library(sf)  # Para funções espaciais
+
+# Carregando os dados de trilhas de furacões
+data("hurr_tracks")
+# library(drat)
+# addRepo("geanders")
+# install.packages("hurricaneexposuredata")
+
+# Filtrar dados para o furacão Katrina de 2005
+katrina_dat <- hurr_tracks[hurr_tracks$storm_id == "Katrina-2005", ]
+
+# Atribuindo cores com base na velocidade do vento
+katrina_dat$color <- cut(katrina_dat$wind,
+                         breaks = c(-Inf, 34, 63, 83, 95, 113, 137, Inf),
+                         labels = rev(brewer.pal(7, "YlOrBr")),
+                         right = FALSE)
+
+# Carregar os limites dos condados
+counties <- tigris::counties(cb = TRUE, year = 2020, class = "sf", progress_bar=FALSE)
+
+# Exemplo de dados de população (use dados reais em uma aplicação prática)
+set.seed(123)  # Para reprodutibilidade
+counties$population <- sample(10000:50000, size = nrow(counties), replace = TRUE)
+
+# Calcular a área em km² e densidade populacional (população por km²)
+counties <- counties %>%
+  mutate(area_km2 = as.numeric(st_area(.)) / 1e6,  # Convertendo de m² para km²
+         density = population / area_km2)  # Densidade populacional
+
+# Filtrar estados afetados pelo furacão Katrina
+affected_states <- c("Louisiana", "Mississippi", "Alabama", "Florida")
+affected_counties <- counties %>%
+  filter(STATE_NAME %in% affected_states)
+
+# Definindo uma paleta de cores
+pal <- colorNumeric(palette = c("yellow", "red"), domain = affected_counties$density)
+
+# Desenhando o mapa
+tmp_map <- leaflet() %>%
+  addTiles() %>%
+  addPolygons(data = affected_counties, 
+              fillColor = ~pal(density), 
+              color = "white", 
+              weight = 1,
+              opacity = 1,
+              fillOpacity = 0.7,
+              highlightOptions = highlightOptions(weight = 3, color = "orange", fillOpacity = 0.7),
+              label = ~paste(NAME, "<br/>Population:", population, "<br/>Density:", round(density, 2)),
+              popup = ~paste("<b>County:</b>", NAME, 
+                             "<br/><b>Population:</b>", population, 
+                             "<br/><b>Density:</b>", round(density, 2))) %>%
+  addPolylines(data = katrina_dat, 
+               ~longitude, ~latitude, 
+               color = ~color, 
+               weight = 2) %>%
+  addCircles(data = katrina_dat, 
+             ~longitude, 
+             ~latitude, 
+             color = ~color, 
+             fill = ~color, 
+             radius = 25000,
+             popup = ~sprintf("<b>Storm: %s</b><br/>
+                              Date: %s<br/>
+                              Wind Speed: %s knots",
+                              htmlEscape(storm_id), htmlEscape(date), htmlEscape(wind)))
+
+# Exibir o mapa
+# html_print(tmp_map)
+tmp_map
+```
+
+]
+
+.pull-right[
+```{r echo=FALSE, message=FALSE, warning=FALSE, results='asis'}
+# Carregando pacotes necessários
+library(ggplot2)
+library(dplyr)
+library(sf)
+library(RColorBrewer)
+library(hurricaneexposuredata)
+library(tigris)
+
+# Carregar os dados de trilhas de furacões
+data("hurr_tracks")
+
+# Filtrar dados para o furacão Katrina de 2005
+katrina_dat <- hurr_tracks %>% 
+  filter(storm_id == "Katrina-2005")
+
+# Carregar os limites dos condados
+counties <- tigris::counties(cb = TRUE, year = 2020, class = "sf", progress_bar = FALSE)
+
+# Exemplo de dados de população (use dados reais em uma aplicação prática)
+set.seed(123)  # Para reprodutibilidade
+counties$population <- sample(10000:50000, size = nrow(counties), replace = TRUE)
+
+# Calcular a área em km² e densidade populacional (população por km²)
+counties <- counties %>%
+  mutate(area_km2 = as.numeric(st_area(.)) / 1e6,  # Convertendo de m² para km²
+         density = population / area_km2)  # Densidade populacional
+
+# Filtrar estados afetados pelo furacão Katrina
+affected_states <- c("Louisiana", "Mississippi", "Alabama", "Florida")
+affected_counties <- counties %>%
+  filter(STATE_NAME %in% affected_states)
+
+# Criando o mapa no ggplot2
+ggplot() +
+  geom_sf(data = affected_counties, aes(fill = density), color = "white", size = 0.2) +
+  scale_fill_gradient(low = "yellow", high = "red", name = "Pop. Density") +
+  geom_path(data = katrina_dat, aes(x = longitude, y = latitude, group = storm_id), 
+            color = "blue", size = 0.8) +
+  geom_point(data = katrina_dat, aes(x = longitude, y = latitude, color = wind), 
+             size = 2, show.legend = FALSE) +
+  scale_color_gradient(low = "lightblue", high = "darkblue") +
+  labs(title = "Hurricane Katrina (2005) Path and Population Density of Affected Counties",
+       subtitle = "Affected States: Louisiana, Mississippi, Alabama, and Florida",
+       x = "Longitude", y = "Latitude") +
+  theme_minimal() +
+  theme(plot.title = element_text(hjust = 0.5))
+
+```
+
+]
+
+
+---
+## <code><font color =#4C5455> Case 9 - Urban/Route map </font></code>
+
+
+<iframe src="sp-route.html" width="100%" height="500px"></iframe>
+
+
+---
+## <code><font color =#4C5455> Case 10 - World Map Exports/Imports </font></code>
+
+.center[
+
+![](ukraine-export_wheat-nolabel.png){height='20px', width='50%'}
+
+]
+
+
+---
+## <code><font color =#4C5455> Case 10b - Exports/Imports </font></code>
+
+.center[
+
+![](./sankey-exports-imports-v2.svg)
+
+]
+
+
+
+---
+## <code><font color =#4C5455> Case 11 - Fancy Map </font></code>
+
+.center[
+
+![](./img/titled_final_plot.png){width='50%'}
+
+]
+
+
+---
+## <code><font color =#4C5455> Case 11 - Reports & Dashboards </font></code>
+
+
+</br>
+</br>
+
+.pull-left[
+<a href="report_SP500.html" target="_blank">Report Automation</a>
+]
+
+.pull-right[
+<a href="https://allanvc.shinyapps.io/nbaf-app" target="_blank">Fast prototyping</a>
+]
+
+---
+class: inverse, center, middle
+
+## Thank you! <code><font color =#4C5455></br>quadros@ksu.edu</font></code>
+
+
+

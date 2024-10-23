@@ -1,0 +1,103 @@
+# title: Network analysis of Products Bought Together
+# author: Felix Analytix
+# abstract: Analyzing product purchase behavior based on search terms
+
+# Install R packages if not installed -------------------------------------
+
+if (!require(tidyverse)) install.packages("tidyverse")
+if (!require(tidygraph)) install.packages("tidygraph")
+if (!require(visNetwork)) install.packages("visNetwork")
+if (!require(janitor)) install.packages("janitor")
+
+# Attach R packages -------------------------------------------------------
+
+library(tidyverse)
+library(tidygraph) # network analysis
+library(visNetwork) # interactive network visualization
+library(janitor) # for data cleaning functions
+
+# Create Mock Data ---------------------------------------------------------
+
+set.seed(123) # For reproducibility
+
+# Generate search terms and products
+search_terms <- c("Smartphone", "Laptop", "Headphones", "Camera", "Tablet", "Smartwatch", "Speaker", "Charger")
+products <- c("iPhone", "Galaxy", "Dell XPS", "MacBook", "Sony WH-1000XM4", "Canon EOS", "iPad", "Apple Watch", "Bose SoundLink", "Anker Charger")
+
+# Product image URLs (Replace with actual image URLs)
+product_images <- c(
+  "https://m.media-amazon.com/images/I/61qrpgQK-oL._AC_UY218_.jpg",  # iPhone
+  "https://m.media-amazon.com/images/I/71qeTVe5d1L._AC_UY218_.jpg",  # Galaxy
+  "https://m.media-amazon.com/images/I/51jB5wrRhbL._AC_UY218_.jpg",  # Dell XPS
+  "https://m.media-amazon.com/images/I/71NZpTxWzRL._AC_UY218_.jpg",  # MacBook
+  "https://m.media-amazon.com/images/I/61vIICn1JOL._AC_UY218_.jpg",  # Sony WH-1000XM4
+  "https://m.media-amazon.com/images/I/71ANGtyZRzL._AC_UY218_.jpg",  # Canon EOS
+  "https://m.media-amazon.com/images/I/61Ep+3Q8OiL._AC_UY218_.jpg",  # iPad
+  "https://m.media-amazon.com/images/I/71nbXdvdGfL._AC_UY218_.jpg",  # Apple Watch
+  "https://m.media-amazon.com/images/I/71L9o0-0SML._AC_UY218_.jpg",  # Bose SoundLink
+  "https://m.media-amazon.com/images/I/5164giE9fFL._AC_UY218_.jpg"   # Anker Charger
+)
+
+# Create a data frame of purchases
+mock_data <- data.frame(
+  SearchTerm = sample(search_terms, 50, replace = TRUE),
+  Product = sample(products, 50, replace = TRUE)
+)
+
+# Clean and reshape the data ------------------------------------------------
+
+df_cleaned <- mock_data %>%
+  filter(!is.na(Product)) %>% # Remove NA products
+  select(SearchTerm, Product) # Select relevant columns
+
+# Create a "tbl_graph" object
+network <- df_cleaned %>%
+  as_tbl_graph()
+
+# Network characteristics
+cat("Number of edges:", network %>% activate(edges) %>% nrow(), "\n")
+cat("Number of nodes:", network %>% activate(nodes) %>% nrow(), "\n")
+
+# Centrality measures, for example degree
+degree_centrality <- network %>%
+  activate(nodes) %>% 
+  mutate(degree = centrality_degree()) %>% 
+  as_tibble() %>%
+  arrange(desc(degree))
+
+# Display top 10 products by degree centrality
+print(head(degree_centrality, 10))
+
+# Prepare node images and labels
+vis_network <- network %>%
+  mutate(group = if_else(condition = name %in% unique(df_cleaned$Product), 
+                         true = "Product", 
+                         false = "Search Term")) %>%
+  toVisNetworkData()
+
+# Map product images to the product names
+vis_network$nodes$image <- NA  # Initialize image column
+
+# Assign images to products
+for (i in seq_along(products)) {
+  vis_network$nodes$image[vis_network$nodes$id == products[i]] <- product_images[i]
+}
+
+# Define color palette
+search_term_color <- "#3498db"  # Blue
+product_color <- "#e74c3c"       # Red
+
+# Interactive network with images
+visNetwork(nodes = vis_network$nodes, edges = vis_network$edges, 
+           width = "100%", height = "600px",
+           main = "Product Click Patterns from Initial Search Queries") %>%
+  visLayout(randomSeed = 1000) %>%
+  addFontAwesome() %>%
+  visGroups(groupname = "Search Term", shape = "icon",
+            icon = list(code = "f002", color = search_term_color)) %>%
+  visGroups(groupname = "Product", shape = "image",
+            image = list(source = vis_network$nodes$image)) %>%
+  visOptions(highlightNearest = list(enabled = TRUE, hover = TRUE), 
+             nodesIdSelection = TRUE) %>%
+  visInteraction(navigationButtons = TRUE) %>%
+  visEdges(color = list(highlight = "#2ecc71", inherit = "no", opacity = 0.5)) # Custom edge colors

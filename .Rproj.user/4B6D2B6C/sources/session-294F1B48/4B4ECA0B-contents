@@ -1,0 +1,65 @@
+# Instalar pacotes necessários
+if (!requireNamespace("plotly", quietly = TRUE)) {
+  install.packages("plotly")
+}
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+
+library(plotly)
+library(dplyr)
+
+# Criar dados de exemplo
+set.seed(42)
+n <- 100
+data <- data.frame(
+  Product = rep(LETTERS[1:5], each = n / 5),
+  Sales = runif(n, 100, 300),
+  Price = runif(n, 20, 150),
+  Region = sample(c("North", "South", "East", "West", "Central"), n, replace = TRUE)
+)
+
+# Definindo uma função para calcular Z com base no tipo de produto
+data <- data %>%
+  mutate(Z = case_when(
+    Region == "North" ~ (Sales + 6 * Price^2)/1000,          # Produto A (Amarelo)
+    Region == "South" ~ (Sales + 2.3 * Price^2)/1000,      # Produto B (Azul)
+    Region == "East" ~ (Sales * 1.2 + Price * 1.5)/1000,  # Produto C (Verde)
+    Region == "West" ~ (Sales * 1.5 + Price * 2)/1000,    # Produto D (Laranja)
+    Region == "Central" ~ (Sales + 4 * Price^2)/1000  # Produto E (Roxo)
+  ))
+
+# Criar scatter plot 3D com produtos separados
+p3d <- plot_ly(data, x = ~Price, y = ~Sales, z = ~Z, 
+               color = ~Region, colors = c("yellow", "blue", "green", "orange", "purple"), 
+               text = ~Region, marker = list(size = 5, opacity = 0.6)) %>%
+  layout(scene = list(xaxis = list(title = "Price"),
+                      yaxis = list(title = "Sales"),
+                      zaxis = list(title = "Discount")),
+         title = "3D Scatter Plot of Sales Data with Distinct Regions")
+
+p3d
+
+
+
+# Instalar e carregar ggplot2
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d <- ggplot(data, aes(x = Price, y = Sales, color = Region)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Sales Data", x = "Price", y = "Sales") +
+  theme_minimal()
+
+p2d
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d2 <- ggplot(data, aes(x = Price, y = Z, color = Region)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Sales Data", x = "Price", y = "Discount") +
+  theme_minimal()
+
+p2d2

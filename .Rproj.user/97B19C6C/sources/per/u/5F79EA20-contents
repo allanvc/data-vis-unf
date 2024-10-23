@@ -1,0 +1,40 @@
+# Carregar pacotes necessários
+library(quantmod)
+library(dplyr)
+library(ggplot2)
+library(rayshader)
+
+# Baixar dados de ações da Apple
+getSymbols("AAPL", src = "yahoo", from = "2022-10-22", to = Sys.Date())
+
+# Preparar os dados de fechamento ajustado
+stock.data <- as.data.frame(AAPL[,6])
+stock.data <- cbind(rownames(stock.data), stock.data)
+colnames(stock.data) <- c("Date", "Price")
+
+# Aplicar transformação logarítmica ao preço
+stock.data$Price <- log10(stock.data$Price)
+
+# Adicionar colunas de semana, dia da semana e ano
+stock.data <- transform(stock.data,
+                        week = as.POSIXlt(Date)$yday %/% 7 + 1,
+                        wday = as.POSIXlt(Date)$wday,
+                        year = as.POSIXlt(Date)$year + 1900)
+
+# Criar o gráfico ggplot sem legenda
+pp <- ggplot(stock.data, aes(week, wday, fill = Price)) + 
+  geom_tile(colour = "white") + 
+  scale_fill_gradientn(colours = c("#D61818","#FFAE63","#FFFFBD","#B5E384")) + 
+  facet_wrap(~ year, ncol = 1) +
+  theme(legend.position = "none")  # Remover a legenda
+
+# Renderizar o gráfico em 3D com rayshader
+plot_gg(pp, width = 4, height = 4, scale = 600, multicore = TRUE)
+
+# Adicionar a legenda separadamente
+pp_with_legend <- ggplot(stock.data, aes(week, wday, fill = Price)) + 
+  geom_tile(colour = "white") + 
+  scale_fill_gradientn(colours = c("#D61818","#FFAE63","#FFFFBD","#B5E384")) + 
+  facet_wrap(~ year, ncol = 1)
+
+print(pp_with_legend)

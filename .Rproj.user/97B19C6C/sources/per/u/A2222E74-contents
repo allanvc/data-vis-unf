@@ -1,0 +1,40 @@
+# Carregar pacotes necessários
+library(quantmod)
+library(plotly)
+library(ggplot2)
+library(dplyr)
+
+# Definir tickers e período
+tickers <- c("IVV", "SPY")
+start_date <- Sys.Date() - 365  # Último ano
+
+# Baixar dados via quantmod
+getSymbols(tickers, from = start_date, to = Sys.Date(), auto.assign = TRUE)
+
+# Extrair os preços de fechamento ajustados
+IVV_data <- Cl(IVV)
+SPY_data <- Cl(SPY)
+
+# Criar data frames para os gráficos
+ivv_df <- data.frame(Date = index(IVV_data), Price = as.numeric(IVV_data), Ticker = "IVV")
+spy_df <- data.frame(Date = index(SPY_data), Price = as.numeric(SPY_data), Ticker = "SPY")
+
+data <- bind_rows(ivv_df, spy_df)
+
+# Gráfico interativo com plotly
+plotly_graph <- plot_ly(data, x = ~Date, y = ~Price, color = ~Ticker, colors = c("#1f77b4", "#ff7f0e")) %>%
+  add_lines() %>%
+  layout(title = "IVV and SPY Prices - Last Year (Plotly)",
+         xaxis = list(title = "Date"),
+         yaxis = list(title = "Price (US$)"))
+
+# Gráfico estático com ggplot2
+ggplot_graph <- ggplot(data, aes(x = Date, y = Price, color = Ticker)) +
+  geom_line(size = 1) +
+  scale_color_manual(values = c("#1f77b4", "#ff7f0e")) +
+  labs(title = "IVV and SPY Prices - Last Year (ggplot2)", x = "Date", y = "Price (US$)") +
+  theme_minimal()
+
+# Visualizar os gráficos
+plotly_graph
+print(ggplot_graph)

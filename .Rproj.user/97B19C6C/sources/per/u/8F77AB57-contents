@@ -1,0 +1,55 @@
+# Instalação dos pacotes necessários
+libs <- c("quantmod", "tidyverse", "plotly", "viridis")
+
+installed_libs <- libs %in% rownames(installed.packages())
+
+if (any(installed_libs == FALSE)) {
+  install.packages(libs[!installed_libs], dependencies = TRUE)
+}
+
+invisible(lapply(libs, library, character.only = TRUE))
+
+# 1. OBTENDO DADOS DAS AÇÕES KO E PEP
+tickers <- c("KO", "PEP")
+
+KO <- getSymbols(tickers[1], src = "yahoo", from = as.Date("2020-01-01"), to = Sys.Date(), auto.assign = FALSE)
+
+PEP <- getSymbols(tickers[2], src = "yahoo", from = as.Date("2020-01-01"), to = Sys.Date(), auto.assign = FALSE)
+
+# 2. RENOMEANDO AS COLUNAS
+colnames(KO) <- gsub("KO\\.", "", colnames(KO))
+colnames(PEP) <- gsub("PEP\\.", "", colnames(PEP))
+
+# 3. PREPARANDO OS DADOS
+data_ko <- data.frame(Date = index(KO), coredata(KO))
+data_pep <- data.frame(Date = index(PEP), coredata(PEP))
+
+# Combinando os dados e ajustando as colunas
+data_stocks <- bind_rows(
+  data_ko %>%
+    select(Date, Adjusted) %>%
+    mutate(Ticker = "KO"),
+  data_pep %>%
+    select(Date, Adjusted) %>%
+    mutate(Ticker = "PEP")
+)
+
+# 4. CRIANDO O PLOT COM PLOTLY
+p <- plot_ly(data_stocks, 
+             x = ~Date, 
+             y = ~Adjusted, 
+             color = ~Ticker, 
+             colors = viridis::viridis(2),
+             type = 'scatter', 
+             mode = 'lines',
+             frame = ~Date, 
+             line = list(width = 2)) %>%
+  layout(
+    title = "Price Movement of KO and PEP",
+    xaxis = list(title = "Date"),
+    yaxis = list(title = "Adjusted Price"),
+    legend = list(title = list(text = "Ticker"), orientation = "h", x = 0.5, xanchor = "center")
+  )
+
+# 5. MOSTRANDO A ANIMAÇÃO
+p

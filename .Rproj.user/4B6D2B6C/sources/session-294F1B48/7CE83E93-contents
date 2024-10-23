@@ -1,0 +1,162 @@
+# Instalar pacotes necessários
+if (!requireNamespace("plotly", quietly = TRUE)) {
+  install.packages("plotly")
+}
+if (!requireNamespace("dplyr", quietly = TRUE)) {
+  install.packages("dplyr")
+}
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+
+library(plotly)
+library(dplyr)
+library(ggplot2)
+
+# Criar dados de exemplo
+set.seed(42)
+n <- 100
+products <- LETTERS[1:5]
+
+# Criar dataframe inicial
+data <- data.frame(
+  Product = rep(products, each = n / length(products))
+)
+
+# Atribuir preços e unidades vendidas
+# Inicializar vetores para preço e unidades vendidas
+Price <- numeric(n)
+Units_Sold <- numeric(n)
+
+for (i in 1:n) {
+  if (data$Product[i] %in% c("A", "B")) {
+    Price[i] <- runif(1, 30, 60)  # Preços mais baixos para A e B
+    Units_Sold[i] <- sample(90:100, 1)  # Mais vendidos
+  } else if (data$Product[i] == "C") {
+    Price[i] <- runif(1, 60, 100)   # Preço intermediário para C
+    Units_Sold[i] <- sample(70:80, 1)  # Moderadamente vendidos
+  } else {
+    Price[i] <- runif(1, 100, 150)  # Preços mais altos para D e E
+    Units_Sold[i] <- sample(30:60, 1)  # Menos vendidos
+  }
+}
+
+data$Price <- Price
+data$Units_Sold <- Units_Sold
+
+# Cálculo de Custo e Satisfação do Cliente
+Marketing_Spend <- runif(n, 500, 2000)  # Gastos em Promoções
+Cost <- 70 - (data$Units_Sold / 10) + (Marketing_Spend / 2000)  # Custo ajustado
+
+data <- data %>%
+  mutate(
+    Cost = Cost,
+    Revenue = Units_Sold * Price,  # Receita
+    Customer_Satisfaction = sapply(Price, function(p) {
+      if (p < 40) return(runif(1, 1, 5))                 # Satisfação menor para preços baixos
+      else if (p >= 40 && p <= 100) return(runif(1, 6, 10))  # Satisfação maior para preços intermediários
+      else return(runif(1, 1, 5))                         # Satisfação menor para preços altos
+    })
+  )
+
+# Calcular margem de lucro
+data <- data %>%
+  mutate(Profit_Margin = (Price - Cost) / Price)
+
+# Classificar Units_Sold em três categorias
+data <- data %>%
+  mutate(
+    Units_Class = case_when(
+      Units_Sold < 60 ~ "Low",
+      Units_Sold >= 60 & Units_Sold <= 80 ~ "Medium",
+      TRUE ~ "High"
+    )
+  )
+
+# Dividir Customer_Satisfaction em classes
+data <- data %>%
+  mutate(
+    Satisfaction_Class = cut(Customer_Satisfaction,
+                             breaks = c(-Inf, 3, 7, Inf), 
+                             labels = c("Low", "Medium", "High"))
+  )
+
+# Criar scatter plot 3D com produtos separados
+p3d1 <- plot_ly(data, x = ~Price, y = ~Revenue, z = ~Units_Sold, 
+               color = ~Product, colors = c("yellow", "blue", "green", "orange", "purple"), 
+               text = ~Product, marker = list(size = 5, opacity = 0.6)) %>%
+  layout(scene = list(xaxis = list(title = "Price"),
+                      yaxis = list(title = "Revenue"),
+                      zaxis = list(title = "Units Sold")),
+         title = "3D Scatter Plot of Revenue Data with Distinct Products")
+
+p3d1
+
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d1a <- ggplot(data, aes(x = Price, y = Revenue, color = Product
+                        #, shape = Units_Class
+                        )) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Revenue Data", x = "Price", y = "Revenue", shape = "Units Sold Class") +
+  theme_minimal()
+
+p2d1a
+
+
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d1b <- ggplot(data, aes(x = Price, y = Revenue, color = Product, shape = Units_Class)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Revenue Data", x = "Price", y = "Revenue", shape = "Units Sold Class") +
+  theme_minimal()
+
+p2d1b
+
+
+
+# Criar scatter plot 3D com produtos separados
+p3d2 <- plot_ly(data, x = ~Price, y = ~Revenue, z = ~Customer_Satisfaction, 
+                color = ~Product, colors = c("yellow", "blue", "green", "orange", "purple"), 
+                text = ~Product, marker = list(size = 5, opacity = 0.6)) %>%
+  layout(scene = list(xaxis = list(title = "Price"),
+                      yaxis = list(title = "Revenue"),
+                      zaxis = list(title = "Customer Satisfaction")),
+         title = "3D Scatter Plot of Revenue Data with Distinct Products")
+
+p3d2
+
+
+# Criar scatter plot 2D para mostrar a sobreposição de produtos
+p2d2a <- ggplot(data, aes(x = Price, y = Revenue, color = Product
+                          #, shape = Units_Class
+)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Revenue Data", x = "Price", y = "Revenue", shape = "Units Sold Class") +
+  theme_minimal()
+
+p2d1a
+
+
+
+# Criar scatter plot 2D para Customer Satisfaction
+p2d_satisfaction <- ggplot(data, aes(x = Price, y = Revenue, color = Product, shape = Satisfaction_Class)) +
+  geom_point(size = 3, alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Revenue Data by Customer Satisfaction", 
+       x = "Price", y = "Revenue", shape = "Customer Satisfaction Class") +
+  theme_minimal()
+
+p2d_satisfaction
+# fica dificil de ver a relacao quadratica entre satisfacao e preco. Produtos com precos intermediarios
+# - estao apresentando as maiores notas em termos de satisfacao do consumidor
+
+# mesma variavel satisfaction soh que variando tamanho.
+# Criar scatter plot 2D para Customer Satisfaction com tamanho variando conforme a classe
+p2d_satisfaction <- ggplot(data, aes(x = Price, y = Revenue, color = Product, size = Satisfaction_Class)) +
+  geom_point(alpha = 0.6) +
+  labs(title = "2D Scatter Plot of Revenue Data by Customer Satisfaction", 
+       x = "Price", y = "Revenue", size = "Customer Satisfaction Class") +
+  scale_size_manual(values = c(2, 5, 8)) +  # Ajuste os tamanhos conforme necessário
+  theme_minimal()
+
+p2d_satisfaction

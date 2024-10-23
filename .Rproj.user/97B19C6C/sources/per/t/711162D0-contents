@@ -1,0 +1,262 @@
+# Load necessary libraries
+if (!require(quantmod)) install.packages("quantmod")
+if (!require(gt)) install.packages("gt")
+if (!require(gtExtras)) install.packages("gtExtras")
+if (!require(tidyverse)) install.packages("tidyverse")
+if (!require(scales)) install.packages("scales")
+
+library(quantmod)  # For stock data
+library(gt)        # For creating tables
+library(gtExtras)  # For extended gt functionalities
+library(tidyverse) # For data wrangling
+library(scales)    # For scaling functions
+
+# Get the top 5 stocks from S&P 500
+top_stocks <- c("AAPL", "MSFT", "GOOGL", "AMZN", "TSLA")  # Example tickers
+
+# Initialize an empty dataframe to store stock data
+stock_data <- data.frame()
+stock_prices_df <- data.frame()
+# Get company logos with actual URLs
+logo_urls <- c(
+  # "https://upload.wikimedia.org/wikipedia/commons/f/fa/Apple_logo_black.svg",        # Apple
+  "https://upload.wikimedia.org/wikipedia/commons/3/31/Apple_logo_white.svg",
+  "https://upload.wikimedia.org/wikipedia/commons/4/44/Microsoft_logo.svg",    # Microsoft
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/7/7a/Alphabet_Inc_Logo_2015.svg/2560px-Alphabet_Inc_Logo_2015.svg.png",       # Google
+  "https://upload.wikimedia.org/wikipedia/commons/a/a9/Amazon_logo.svg",       # Amazon
+  "https://upload.wikimedia.org/wikipedia/commons/thumb/b/bd/Tesla_Motors.svg/800px-Tesla_Motors.svg.png"         # Tesla
+)
+
+## ----Simulating Sentiment Analysis-----------------------------------
+# Simulated sentiment scores for each company (-1 to 1 scale)
+sentiment_scores <- c(0.5, -0.2, 0, 0.7, -0.5)  # Example scores for AAPL, MSFT, GOOGL, AMZN, TSLA
+
+# Loop through the top stocks to get required information
+for (i in 1:length(top_stocks)) {
+  # Attempt to get stock data
+  # stock = top_stocks[1]
+  stock = top_stocks[i]
+  tryCatch({
+    out <- quantmod::getSymbols(stock, 
+                                from = "2023-09-30", 
+                                to = "2024-09-30",
+                                periodicity = "daily",
+                                auto.assign = FALSE)
+    
+    # Check if data exists
+    stock_prices <- Cl(out)
+    stock_volume <- Vo(out)
+    
+    if (length(stock_prices) > 0 && length(stock_volume) > 0) {
+      # Get the last closing price, trading volume, and percentage change
+      last_price <- stock_prices[nrow(stock_prices)]
+      volume <- stock_volume[nrow(stock_volume)]
+      pct_change <- (last_price - as.numeric(stock_prices[nrow(stock_prices) - 1])) / as.numeric(stock_prices[nrow(stock_prices) - 1]) * 100
+      
+      # Store data in a temporary dataframe
+      stock_info <- data.frame(
+        ticker = stock,
+        last_price = last_price,
+        volume = volume,
+        pct_change = pct_change
+      )
+      
+      # Ensure correct column names
+      colnames(stock_info) <- c("ticker", "last_price", "volume", "pct_change")
+      stock_data <- rbind(stock_data, stock_info)
+      
+      stock_prices_df <- rbind(stock_prices_df, 
+                               data.frame("ticker" = rep(stock, 
+                                                         nrow(stock_prices)),
+                                          "prices" = as.numeric(stock_prices), 
+                                          "volume" = as.numeric(stock_volume),
+                                          "logo" = logo_urls[i],
+                                          "sentiment" = sentiment_scores[i],
+                                          "last_price" = as.numeric(last_price),
+                                          "last_volume" = as.numeric(volume),
+                                          "pct_change" = as.numeric(pct_change)))
+      
+      
+    } else {
+      message(paste("No data available for", stock))
+    }
+    
+  }, error = function(e) {
+    message(paste("Error fetching data for", stock, ":", e$message))
+  })
+}
+
+
+
+# Check if any data was retrieved
+if (nrow(stock_data) == 0) {
+  stop("No stock data available. Please check the stock symbols or your internet connection.")
+}
+
+
+
+
+## ----Color gradient numeric cells-----------------------------------
+# Create custom color scales for positive and negative pct_change
+colors <- hue_pal(direction = -1)(3)
+
+pos_colors <- c("#5bb450", "#8bca84")
+neg_colors <- c("#ff2c2c", "#f69697")
+neutral_color <- "#FFA500"  # Orange for neutral sentiment
+
+mn <- min(stock_data$pct_change)
+mx <- max(stock_data$pct_change)
+
+# Format volume to millions and round to two decimal places
+# stock_data$volume <- round(stock_data$volume / 1e6, 2)  # Convert to millions and round
+stock_prices_df$volume <- round(stock_prices_df$volume / 1e6, 2)  # Convert to millions and round
+
+stock_prices_df2 <- stock_prices_df %>%
+  select(logo, ticker, last_price, volume, pct_change, sentiment, prices)
+
+# Create the table
+stock_prices_df2 %>%
+  group_by(ticker) |>
+  summarise(logo = logo[1],
+            ticker = ticker[1],
+            last_price = last_price[1],
+            volume = volume[1],
+            pct_change = pct_change[1],
+            sentiment = sentiment[1],
+            prices_data = list(prices) # adds the data as a list to the end of the df
+  ) %>%
+  ungroup() %>%
+  select(logo, ticker, last_price, volume, pct_change, sentiment, prices_data) %>%
+  gt() %>%
+  gt_plt_sparkline(prices_data, type = "shaded",
+                   palette = c("#248c7a", 
+                               "#248c7a",
+                               neg_colors[1],
+                               pos_colors[1],
+                               "#d4e8e6")) %>%
+  # sol:
+  # https://r-graph-gallery.com/368-plotting-in-cells-with-gtextras.html
+  # https://stackoverflow.com/questions/69531801/plot-histograms-per-row-using-gt-tables-r
+  # (ultima resposta)
+  
+  gt_img_rows(logo, height = 20) %>%  # Display logos as images
+  tab_style(
+    style = list(
+      cell_fill(color = pos_colors[2])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change >= 0
+    )
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = pos_colors[1])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change >= 1
+    )
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = neg_colors[2])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change < 0
+    )
+  ) %>%
+  tab_style(
+    style = list(
+      cell_fill(color = neg_colors[1])
+    ),
+    locations = cells_body(
+      columns = pct_change,
+      rows = pct_change <= -1
+    )
+  ) %>%
+  cols_label(
+    logo = "",           # Empty label for the logo column
+    ticker = "Ticker",
+    last_price = "Last Price",
+    volume = "Vol. (M)",
+    pct_change = "Change (%)",
+    sentiment = "Sentiment",  # New column label
+    prices_data = "YTD"
+  ) %>%
+  fmt_number(
+    columns = pct_change,
+    decimals = 2  # Round pct_change to 2 decimal places
+  ) %>%
+  fmt_number(
+    columns = volume,
+    decimals = 2  # Round volume to 2 decimal places
+  ) %>%
+  tab_style(
+    style = list(cell_text(color = "white")),  # Set font color for pct_change to white
+    locations = cells_body(columns = pct_change)
+  ) %>%
+  cols_width(logo ~ px(40)) %>%  # Adjust logo width for rectangular size
+  tab_style(
+    style = list(cell_text(style = "italic")),
+    locations = cells_body(columns = ticker)
+  ) %>%
+  tab_style(
+    style = list(cell_text(align = "center")),  # Center align logos
+    locations = cells_body(columns = logo)
+  ) %>%
+  # Create sentiment bars manually
+  text_transform(
+    locations = cells_body(columns = sentiment),
+    fn = function(x) {
+      # Ensure x is numeric
+      x <- as.numeric(x)
+      
+      # Prepare sentiment bars
+      sentiment_bars <- sapply(x, function(val) {
+        if (val > 0) {
+          width_pos <- min(50, 50 * val)  # Width for positive sentiment
+          # Calculate width for each bar
+          width_positive <- pmax(0, pmin(50 * val, 50))   # Width for positive sentiment
+          # width_negative <- pmax(0, pmin(50 * -x, 50))  # Width for negative sentiment
+          return(paste0(
+            '<div style="display: flex; width: 100%; height: 15px;">',
+            '<div style="background-color:transparent; width: 50%; height: 15px;"></div>',
+            '<div style="background-color:', pos_colors[1], '; width:', width_positive, '%; height: 15px;"></div>',
+            # '<div style="background-color:transparent; width: 50%; height: 20px;"></div>',
+            # '<div style="background-color:', pos_colors[1], '; width:', 50-width_pos, '%; height: 20px;"></div>',
+            # '<div style="display: flex; width: 100%; height: 20px;">',
+            # '<div style="background-color:', pos_colors[1], '; width:', width_pos, '%; height: 20px;"></div>',
+            # '<div style="background-color:transparent; width:', 50 - width_pos, '%; height: 20px;"></div>',
+            '</div>'
+          ))
+        } else if (val < 0) {
+          width_neg <- min(50, 50 * abs(val))  # Width for negative sentiment
+          return(paste0(
+            '<div style="display: flex; width: 100%; height: 15px;">',
+            '<div style="background-color:transparent; width:', 50 - width_neg, '%; height: 15px;"></div>',
+            '<div style="background-color:', neg_colors[1], '; width:', width_neg, '%; height: 15px;"></div>',
+            '</div>'
+          ))
+        } else {
+          return(paste0(
+            '<div style="display: flex; width: 100%; height: 10px;">',
+            '<div style="background-color:transparent; width:', 45, '%; height: 10px;"></div>',
+            '<div style="background-color:', neutral_color, '; width:', 10, '%; height: 10px;"></div>',
+            '</div>'
+            # '<div style="background-color:', neutral_color, '; width:100%; height: 20px;"></div>'
+          ))
+        }
+      })
+      return(sentiment_bars)
+    }
+  ) %>%
+  tab_options(heading.title.font.size = px(24)) %>%
+  tab_header(
+    title = "Top 5 S&P 500 Stocks",
+    subtitle = "Latest trading information and company logos."
+  ) %>%
+  tab_source_note(md("Author: Your Name")) %>%
+  # gt_theme_guardian()
+  gt_theme_dark()

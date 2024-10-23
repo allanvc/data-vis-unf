@@ -1,0 +1,115 @@
+# Instalar pacotes necessários
+if (!requireNamespace("plotly", quietly = TRUE)) {
+  install.packages("plotly")
+}
+
+library(plotly)
+
+# Definindo parâmetros para a esfera maior
+n_sphere <- 50
+theta <- seq(0, 2 * pi, length.out = n_sphere)
+phi <- seq(0, pi, length.out = n_sphere)
+
+# Adicionando perturbações à esfera maior
+noise_sphere <- runif(n_sphere * n_sphere, min = -0.1, max = 0.1)  # Ruído para a esfera
+x_sphere <- (1 + noise_sphere) * outer(cos(theta), sin(phi))  # Raio da esfera maior
+y_sphere <- (1 + noise_sphere) * outer(sin(theta), sin(phi))
+z_sphere <- outer(rep(1, n_sphere), cos(phi))  # Esfera maior
+
+# Definindo parâmetros para a esfera menor
+noise_sphere_small <- runif(n_sphere * n_sphere, min = -0.05, max = 0.05)  # Ruído para a esfera menor
+x_sphere_small <- (0.5 + noise_sphere_small) * outer(cos(theta), sin(phi))  # Raio da esfera menor
+y_sphere_small <- (0.5 + noise_sphere_small) * outer(sin(theta), sin(phi))
+z_sphere_small <- outer(rep(2, n_sphere), cos(phi))  # Esfera menor acima da maior
+
+# Definindo parâmetros para os círculos (anéis)
+circle_radius <- 1.5
+circle_theta <- seq(0, 2 * pi, length.out = 100)
+
+# Criar o gráfico 3D usando scatter plot
+p <- plot_ly() %>%
+  # Adicionar a esfera maior como pontos
+  add_markers(x = as.vector(x_sphere), y = as.vector(y_sphere), z = as.vector(z_sphere),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Large Sphere") %>%
+  # Adicionar a esfera menor como pontos
+  add_markers(x = as.vector(x_sphere_small), y = as.vector(y_sphere_small), z = as.vector(z_sphere_small),
+              marker = list(size = 3, color = 'red', opacity = 0.8), name = "Small Sphere")
+
+# Criar anéis
+ring_counts <- 5  # Número de anéis
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  z_offset <- i * 0.3  # Elevação de cada anel ao longo do eixo Z
+  
+  # Adicionando perturbações ao círculo
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  z_ring <- rep(z_offset, length(circle_theta))  # Anéis em diferentes alturas
+  
+  # Adicionar os anéis ao gráfico
+  p <- p %>%
+    add_markers(x = x_ring, y = y_ring, z = z_ring, 
+                marker = list(size = 5, color = 'red', opacity = 0.6), 
+                name = paste("Ring", i))
+}
+
+# Configurar layout
+p <- p %>%
+  layout(scene = list(xaxis = list(title = "X"),
+                      yaxis = list(title = "Y"),
+                      zaxis = list(title = "Z"),
+                      camera = list(
+                        eye = list(x = 0.8, y = 0.8, z = 3)  # Ajustar a posição da câmera
+                      ))
+         # title = "3D Sphere with Multiple Rings and a Smaller Sphere"),
+)
+
+p
+
+
+
+# Instalar e carregar ggplot2
+if (!requireNamespace("ggplot2", quietly = TRUE)) {
+  install.packages("ggplot2")
+}
+library(ggplot2)
+
+# Criar dados para a versão 2D
+# Esfera maior
+sphere_data <- data.frame(
+  x = as.vector(x_sphere),
+  y = as.vector(y_sphere),
+  type = "Large Sphere"
+)
+
+# Esfera menor
+small_sphere_data <- data.frame(
+  x = as.vector(x_sphere_small),
+  y = as.vector(y_sphere_small),
+  type = "Small Sphere"
+)
+
+# Dados dos anéis
+ring_data <- data.frame()
+for (i in 1:ring_counts) {
+  radius <- circle_radius + i * 0.2  # Raio de cada anel
+  noise_circle <- runif(length(circle_theta), min = -0.1, max = 0.1)  # Ruído para o círculo
+  x_ring <- (radius + noise_circle) * cos(circle_theta)
+  y_ring <- (radius + noise_circle) * sin(circle_theta)
+  ring_data <- rbind(ring_data, data.frame(x = x_ring, y = y_ring, type = paste("Ring", i)))
+}
+
+# Combinar todos os dados em um único dataframe
+all_data <- rbind(sphere_data, small_sphere_data, ring_data)
+
+# Criar o gráfico 2D
+p2d <- ggplot(all_data, aes(x = x, y = y#, 
+                            # color = type
+                            )) +
+  geom_point(size = 1, alpha = 0.8) +
+  labs(title = "2D Projection of Sphere and Rings", x = "X", y = "Y") +
+  theme_minimal()
+
+p2d
+# podems tentar adicionar a cor, mas nao ajuda!!

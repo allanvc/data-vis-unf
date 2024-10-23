@@ -1,0 +1,46 @@
+# Carregar as bibliotecas necessárias
+library(ggplot2)
+library(gganimate)
+library(dplyr)
+library(scales)
+library(showtext)
+
+# Adicionar fonte para os tickers
+font_add("Consolas", "C:/Windows/Fonts/consola.ttf") # Ajuste o caminho conforme necessário
+showtext_auto()
+
+# Criar um dataframe de exemplo com preços fictícios de ações
+set.seed(42)
+dates <- seq(as.Date("2022-10-16"), as.Date("2024-10-15"), by = "day")
+airbus_prices <- cumsum(rnorm(length(dates), mean = 0.1, sd = 1)) + 140
+boeing_prices <- cumsum(rnorm(length(dates), mean = 0.05, sd = 1)) + 25
+
+data <- data.frame(
+  Date = rep(dates, 2),
+  Price = c(airbus_prices, boeing_prices),
+  Ticker = rep(c("AIR.PA", "BA"), each = length(dates))
+)
+
+# Gráfico
+p <- ggplot(data, aes(x = Date, y = Price, color = Ticker, group = Ticker)) +
+  geom_line(size = 1.2) +
+  geom_point(size = 3, aes(shape = Ticker)) +
+  geom_text(data = filter(data, Date == max(Date)), aes(label = paste(Ticker, "\n$", round(Price, 2), sep = "")), 
+            vjust = -1, size = 5, fontface = "bold", check_overlap = TRUE) +
+  scale_color_manual(values = c("AIR.PA" = "#1f77b4", "BA" = "#ff7f0e")) + # Tons do Plotly
+  theme_minimal(base_family = "Consolas") +
+  theme(
+    plot.background = element_rect(fill = "lightgrey"),
+    panel.grid.major = element_line(color = "grey80"),
+    panel.grid.minor = element_blank(),
+    axis.title = element_blank(),
+    axis.text.x = element_text(angle = 45, hjust = 1),
+    legend.position = "none"
+  ) +
+  labs(title = 'Stock Price Animation\nwww.stocktotters.com/compare') +
+  transition_reveal(Date) +
+  ease_aes('linear')
+
+# Animação e salvamento
+anim <- animate(p, nframes = 100, fps = 10)
+anim_save("animated_stock_prices.gif", animation = anim)
