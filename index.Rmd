@@ -74,7 +74,7 @@ Share my experience on data visualization & predictive analysis
 class: inverse, center, middle
 <!-- title-slide-section-grey,  -->
 
-## What is the right way way of doing data visualization?
+## What is the right way of doing data visualization?
 
 ---
 
@@ -536,7 +536,7 @@ library(dplyr)
 set.seed(123)
 data <- data.frame(
   Time = 1:10,
-  Sales = cumsum(rnorm(10, mean = 10, sd = 5))
+  Sales = ceiling(cumsum(rnorm(10, mean = 10, sd = 5)))
 )
 
 # Convertendo os dados para uma série temporal
@@ -551,11 +551,11 @@ forecast_arima <- forecast(arima_model, h = 2, level = c(80, 95))
 # Convertendo a previsão para data frame
 forecast_data <- data.frame(
   Time = 11:12,
-  Sales = forecast_arima$mean,
-  L95 = forecast_arima$lower[, 2],
-  L80 = forecast_arima$lower[, 1],
-  U80 = forecast_arima$upper[, 1],
-  U95 = forecast_arima$upper[, 2]
+  Sales = ceiling(forecast_arima$mean),
+  L95 = ceiling(forecast_arima$lower[, 2]),
+  L80 = ceiling(forecast_arima$lower[, 1]),
+  U80 = ceiling(forecast_arima$upper[, 1]),
+  U95 = ceiling(forecast_arima$upper[, 2])
 )
 
 # Adicionando colunas de intervalo de confiança aos dados originais
@@ -888,7 +888,7 @@ stock_prices_df2 %>%
   tab_options(heading.title.font.size = px(24)) %>%
   tab_header(
     title = "Top 5 S&P 500 Stocks",
-    subtitle = "Latest trading information and company logos."
+    subtitle = "Latest trading information and sentiment."
   ) %>%
   tab_source_note(md("Data collected from 9/30/23 to 9/30/24 - Allan Quadros (2024)")) %>%
   # gt_theme_guardian()
@@ -1271,7 +1271,8 @@ katrina_dat <- hurr_tracks[hurr_tracks$storm_id == "Katrina-2005", ]
 # Atribuindo cores com base na velocidade do vento
 katrina_dat$color <- cut(katrina_dat$wind,
                          breaks = c(-Inf, 34, 63, 83, 95, 113, 137, Inf),
-                         labels = rev(brewer.pal(7, "YlOrBr")),
+                         #labels = rev(brewer.pal(7, "YlOrBr")),
+                         labels = brewer.pal(7, "YlOrBr"),
                          right = FALSE)
 
 # Carregar os limites dos condados
